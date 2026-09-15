@@ -1,0 +1,16 @@
+{
+  "startUrls": [{ "url": "https://example.com/best-mens-supplement-brands" }],
+  "discoveryMode": "outbound-links",
+  "brandLinkSelector": ".article-body",
+  "maxBrands": 25,
+  "profileDepth": "standard",
+  "maxProductsPerBrand": 8,
+  "adsProvider": "apify-actor",
+  "adsApifyActorId": "apify/facebook-ads-scraper",
+  "adCountries": ["US"],
+  "adSearchStrategy": "brand+products",
+  "adsPerBrand": 20,
+  "rankBy": "composite",
+  "outputFormats": ["json", "markdown", "html"],
+  "proxyConfiguration": { "useApifyProxy": true }
+}

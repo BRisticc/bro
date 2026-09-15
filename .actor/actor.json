@@ -1,0 +1,51 @@
+{
+  "actorSpecification": 1,
+  "name": "brand-niche-ad-angle-intel",
+  "title": "Brand Niche & Ad Angle Intelligence",
+  "description": "Mine any web page for brands, classify each into niche / sub-niche / audience, then pull their Meta Ad Library ads (highest-exposure first) and reverse-engineer the marketing angles from the ad copy.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": { "templateId": "ts-crawlee-cheerio" },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "title": "Brand intelligence reports",
+      "views": {
+        "overview": {
+          "title": "Brand overview",
+          "transformation": {
+            "fields": [
+              "brandName",
+              "domain",
+              "niche",
+              "subNiche",
+              "audience",
+              "classificationConfidence",
+              "adCount",
+              "topAngle",
+              "exposureScore",
+              "websiteUrl"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "brandName": { "label": "Brand" },
+              "domain": { "label": "Domain" },
+              "niche": { "label": "Niche" },
+              "subNiche": { "label": "Sub-niche" },
+              "audience": { "label": "Audience" },
+              "classificationConfidence": { "label": "Confidence" },
+              "adCount": { "label": "Ads found" },
+              "topAngle": { "label": "Primary angle" },
+              "exposureScore": { "label": "Exposure score" },
+              "websiteUrl": { "label": "Website" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

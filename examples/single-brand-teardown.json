@@ -1,0 +1,14 @@
+{
+  "startUrls": [{ "url": "https://example-brand.com" }],
+  "discoveryMode": "single-brand",
+  "profileDepth": "deep",
+  "maxProductsPerBrand": 15,
+  "adsProvider": "apify-actor",
+  "adCountries": ["US", "GB", "DE"],
+  "adSearchStrategy": "brand+products",
+  "adsPerBrand": 50,
+  "adActiveStatus": "ACTIVE",
+  "rankBy": "composite",
+  "useLlm": false,
+  "proxyConfiguration": { "useApifyProxy": true }
+}

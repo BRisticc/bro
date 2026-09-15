@@ -1,0 +1,12 @@
+{
+  "startUrls": [{ "url": "https://example.com/top-skincare-brands-europe" }],
+  "maxBrands": 15,
+  "adsProvider": "meta-graph",
+  "metaAccessToken": "<your Meta Graph API token>",
+  "adCountries": ["DE", "FR", "IT", "ES", "NL"],
+  "adSearchStrategy": "brand",
+  "adsPerBrand": 30,
+  "rankBy": "reach",
+  "outputFormats": ["json", "html"],
+  "proxyConfiguration": { "useApifyProxy": true }
+}

@@ -1,0 +1,17 @@
+{
+  "startUrls": [{ "url": "https://example.com/dtc-brand-directory" }],
+  "maxBrands": 100,
+  "profileDepth": "fast",
+  "adsProvider": "none",
+  "minClassificationConfidence": 20,
+  "customTaxonomy": {
+    "Gaming": {
+      "Peripherals": {
+        "terms": ["mechanical keyboard", ["gaming mouse", 4], ["rgb", 2]],
+        "audience": ["teens & young adults"]
+      }
+    }
+  },
+  "outputFormats": ["json", "markdown"],
+  "proxyConfiguration": { "useApifyProxy": true }
+}

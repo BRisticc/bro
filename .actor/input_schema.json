@@ -1,0 +1,224 @@
+{
+  "title": "Brand Niche & Ad Angle Intelligence",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "startUrls": {
+      "title": "Source page(s)",
+      "type": "array",
+      "description": "The web page(s) to mine for brands. Can be a listicle ('25 best men's supplement brands'), a marketplace category, a retailer stockist page, an awards list, a directory, or a single brand's own site (set Discovery mode to 'single-brand').",
+      "editor": "requestListSources",
+      "prefill": [{ "url": "https://example.com/best-mens-supplement-brands" }]
+    },
+    "discoveryMode": {
+      "title": "Discovery mode",
+      "type": "string",
+      "description": "How brands are extracted from the source page. 'auto' detects whether the page is a list of brands or a single brand site.",
+      "editor": "select",
+      "enum": ["auto", "outbound-links", "single-brand"],
+      "enumTitles": [
+        "Auto-detect",
+        "Outbound links (listicles, directories, stockist pages)",
+        "Single brand (the source page IS the brand)"
+      ],
+      "default": "auto"
+    },
+    "brandLinkSelector": {
+      "title": "Brand link CSS selector (optional)",
+      "type": "string",
+      "description": "Restrict brand-link extraction to a region of the page, e.g. '.article-body' or '#brand-grid'. Leave empty to scan the whole page with heuristic filtering.",
+      "editor": "textfield",
+      "sectionCaption": "Discovery"
+    },
+    "maxBrands": {
+      "title": "Max brands",
+      "type": "integer",
+      "description": "Maximum number of brands to profile and research.",
+      "default": 25,
+      "minimum": 1,
+      "maximum": 500
+    },
+    "includeDomains": {
+      "title": "Only these domains",
+      "type": "array",
+      "description": "If set, only brand links on these registrable domains are kept.",
+      "editor": "stringList"
+    },
+    "excludeDomains": {
+      "title": "Never these domains",
+      "type": "array",
+      "description": "Extra domains to drop on top of the built-in denylist (social networks, CDNs, retailers, news sites).",
+      "editor": "stringList"
+    },
+    "profileDepth": {
+      "title": "Brand profiling depth",
+      "type": "string",
+      "description": "'fast' = homepage only. 'standard' = homepage + about/product index + Shopify products.json. 'deep' = standard + up to 5 extra on-site pages.",
+      "editor": "select",
+      "enum": ["fast", "standard", "deep"],
+      "enumTitles": ["Fast (homepage only)", "Standard (recommended)", "Deep (slowest, richest)"],
+      "default": "standard",
+      "sectionCaption": "Profiling & classification"
+    },
+    "maxProductsPerBrand": {
+      "title": "Max products per brand",
+      "type": "integer",
+      "description": "How many product names to keep per brand. These become Ad Library search terms when the ad search strategy includes products.",
+      "default": 8,
+      "minimum": 0,
+      "maximum": 50
+    },
+    "minClassificationConfidence": {
+      "title": "Min classification confidence",
+      "type": "integer",
+      "description": "Brands scoring below this (0-100) are still reported but flagged as 'unclassified'.",
+      "default": 25,
+      "minimum": 0,
+      "maximum": 100
+    },
+    "customTaxonomy": {
+      "title": "Custom taxonomy (optional)",
+      "type": "object",
+      "description": "Override or extend the built-in niche taxonomy. Shape: { \"niche\": { \"subNiche\": { \"terms\": [\"...\"], \"audience\": [\"...\"] } } }. Merged over the built-in taxonomy.",
+      "editor": "json"
+    },
+    "adsProvider": {
+      "title": "Ad Library provider",
+      "type": "string",
+      "description": "Where ad data comes from. 'auto' picks the first one that is configured. See README for what each provider can and cannot return.",
+      "editor": "select",
+      "enum": ["auto", "meta-graph", "apify-actor", "none"],
+      "enumTitles": [
+        "Auto (first configured)",
+        "Meta Ad Library Graph API (needs access token)",
+        "Apify Ad Library actor (needs Apify token)",
+        "None (skip ad research)"
+      ],
+      "default": "auto",
+      "sectionCaption": "Ad research"
+    },
+    "metaAccessToken": {
+      "title": "Meta Graph API access token",
+      "type": "string",
+      "description": "Token for the official Ad Library API (ads_archive). Required for the 'meta-graph' provider.",
+      "editor": "textfield",
+      "isSecret": true
+    },
+    "adsApifyActorId": {
+      "title": "Apify Ad Library actor ID",
+      "type": "string",
+      "description": "Actor to call for ad data when using the 'apify-actor' provider, e.g. 'apify/facebook-ads-scraper'.",
+      "editor": "textfield",
+      "default": "apify/facebook-ads-scraper"
+    },
+    "adsApifyActorInput": {
+      "title": "Extra input for the Ad Library actor",
+      "type": "object",
+      "description": "Merged into the input sent to the Ad Library actor. Use it to pass actor-specific options the mapper does not set.",
+      "editor": "json"
+    },
+    "adCountries": {
+      "title": "Ad countries",
+      "type": "array",
+      "description": "ISO country codes to search the Ad Library in. EU codes are what unlock audience-reach figures.",
+      "editor": "stringList",
+      "default": ["US"]
+    },
+    "adSearchStrategy": {
+      "title": "Ad search strategy",
+      "type": "string",
+      "description": "What to search the Ad Library for.",
+      "editor": "select",
+      "enum": ["brand", "brand+products", "products"],
+      "enumTitles": ["Brand name only", "Brand name + product names", "Product names only"],
+      "default": "brand+products"
+    },
+    "adsPerBrand": {
+      "title": "Max ads per brand",
+      "type": "integer",
+      "description": "How many ads to keep per brand after ranking by exposure.",
+      "default": 20,
+      "minimum": 1,
+      "maximum": 200
+    },
+    "adActiveStatus": {
+      "title": "Ad status",
+      "type": "string",
+      "editor": "select",
+      "enum": ["ALL", "ACTIVE", "INACTIVE"],
+      "default": "ALL"
+    },
+    "rankBy": {
+      "title": "Rank ads by",
+      "type": "string",
+      "description": "'composite' blends every exposure signal that is actually present (impressions, EU reach, days running, creative variants, spend). Read the README: Meta only publishes true impressions for political/issue ads.",
+      "editor": "select",
+      "enum": ["composite", "impressions", "reach", "longevity", "spend"],
+      "enumTitles": [
+        "Composite exposure score (recommended)",
+        "Impressions (political/issue ads only)",
+        "EU audience reach",
+        "Days running",
+        "Spend (political/issue ads only)"
+      ],
+      "default": "composite"
+    },
+    "useLlm": {
+      "title": "Use an LLM to enrich classification & angles",
+      "type": "boolean",
+      "description": "Off by default: the actor is fully deterministic without it. When on, an LLM refines the niche call and names the angles in plain language, on top of (never instead of) the rule-based pass.",
+      "default": false,
+      "sectionCaption": "Optional LLM enrichment"
+    },
+    "llmApiKey": {
+      "title": "Anthropic API key",
+      "type": "string",
+      "editor": "textfield",
+      "isSecret": true
+    },
+    "llmModel": {
+      "title": "Model",
+      "type": "string",
+      "editor": "textfield",
+      "default": "claude-sonnet-5"
+    },
+    "outputFormats": {
+      "title": "Report formats",
+      "type": "array",
+      "description": "Dataset is always written. The others are saved to the key-value store as REPORT.json / REPORT.md / REPORT.html.",
+      "editor": "select",
+      "items": { "type": "string", "enum": ["json", "markdown", "html"], "enumTitles": ["JSON", "Markdown", "HTML"] },
+      "default": ["json", "markdown", "html"],
+      "sectionCaption": "Output & runtime"
+    },
+    "maxConcurrency": {
+      "title": "Max concurrency",
+      "type": "integer",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 50
+    },
+    "requestTimeoutSecs": {
+      "title": "Request timeout (s)",
+      "type": "integer",
+      "default": 30,
+      "minimum": 5,
+      "maximum": 300
+    },
+    "maxRequestRetries": {
+      "title": "Max retries per request",
+      "type": "integer",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 10
+    },
+    "proxyConfiguration": {
+      "title": "Proxy configuration",
+      "type": "object",
+      "description": "Strongly recommended. Brand sites and the Ad Library both rate-limit datacenter IPs.",
+      "editor": "proxy",
+      "default": { "useApifyProxy": true }
+    }
+  },
+  "required": ["startUrls"]
+}

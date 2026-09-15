@@ -1,0 +1,28 @@
+{
+  "name": "brand-niche-ad-angle-intel",
+  "version": "1.0.0",
+  "description": "Apify actor: mine a web page for brands, classify them into niche/sub-niche, then research their Meta Ad Library ads and reverse-engineer the marketing angles from ad copy.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && node dist/main.js",
+    "start:dev": "tsx src/main.ts",
+    "test": "npm run test:build && node --test \"dist-tests/tests/*.test.js\"",
+    "test:build": "tsc -p tsconfig.test.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "docs": "npm run build && node scripts/gen-reference.mjs"
+  },
+  "dependencies": {
+    "apify": "^3.7.2",
+    "cheerio": "^1.2.0",
+    "crawlee": "^3.18.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.0"
+  }
+}
