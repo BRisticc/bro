@@ -87,6 +87,24 @@ function brandCard(brand: BrandReport): string {
         }
         parts.push('</ul>');
     }
+    const vocab = brand.vocabulary;
+    if (vocab && vocab.signature.length > 0) {
+        parts.push('<p class="meta"><b>Language they repeat</b> (share of this brand\'s ads)</p>');
+        parts.push(`<p class="meta">${vocab.signature.slice(0, 18).map((t) => `<span class="chip">${escapeHtml(t.term)} ${t.adShare}%</span>`).join('')}</p>`);
+        if (vocab.distinctive.length > 0) {
+            parts.push(`<p class="meta">Their words, not the category's: ${vocab.distinctive.map((t) => `<span class="chip">${escapeHtml(t.term)} ${t.lift}×</span>`).join('')}</p>`);
+        }
+        if (vocab.hookTerms.length > 0) {
+            parts.push(`<p class="meta">Hook vocabulary: ${vocab.hookTerms.slice(0, 10).map((t) => `<span class="chip">${escapeHtml(t.term)}</span>`).join('')}</p>`);
+        }
+        if (vocab.ctaTerms.length > 0) {
+            parts.push(`<p class="meta">Closing vocabulary: ${vocab.ctaTerms.slice(0, 10).map((t) => `<span class="chip">${escapeHtml(t.term)}</span>`).join('')}</p>`);
+        }
+        for (const group of vocab.byAngle.slice(0, 6)) {
+            parts.push(`<p class="meta"><b>${escapeHtml(group.label)}</b> (${group.adCount} ads): ${group.terms.map((t) => `<span class="chip">${escapeHtml(t)}</span>`).join('')}</p>`);
+        }
+    }
+
     if (brand.creativeCompetitors.length > 0) {
         parts.push(`<p class="meta">Same feed slot: ${brand.creativeCompetitors.map((c) => `<span class="chip">${escapeHtml(c.brand)} ${c.similarity}%</span>`).join('')}</p>`);
     }
@@ -158,6 +176,11 @@ function benchmarkCard(b: NicheBenchmark): string {
     mix('Postures', b.postureMix);
     if (b.commonTools.length > 0) {
         parts.push(`<p class="meta">Category stack: ${b.commonTools.map((t) => `<span class="chip">${escapeHtml(t.tool)} ${t.brandShare}%</span>`).join('')}</p>`);
+    }
+
+    if (b.vocabulary.length > 0) {
+        parts.push('<p class="meta"><b>Shared category language</b> — terms and how many brands use them</p>');
+        parts.push(`<p class="meta">${b.vocabulary.slice(0, 20).map((v) => `<span class="chip">${escapeHtml(v.term)} ${v.brandCount}/${Math.max(1, b.brandCount)}</span>`).join('')}</p>`);
     }
 
     if (b.angleWhitespace.length > 0) {

@@ -104,6 +104,34 @@ Classification tells you what a brand *is*. This layer tells you what it is *rel
 | **Scaling posture** | One word — `scaling`, `testing`, `steady`, `stale`, `absent` — with the reason. Often more actionable than the angle breakdown, because it says whether a brand is a live competitor or a coasting one. |
 | **Media & platform mix** | Video vs image vs carousel; Facebook vs Instagram vs Audience Network. |
 
+**Recurring language — what they actually say, over and over:**
+
+| Output | What it answers |
+| --- | --- |
+| **Signature vocabulary** | The words and phrases a brand repeats *across* its ads, with the share of ads carrying each and the average exposure of those ads. |
+| **Their words, not the category's** | Terms this brand over-indexes on versus the rest of its niche, with a lift multiple. |
+| **Hook vs closing vocabulary** | The language that opens ads and the language that closes them, mined separately. |
+| **Words per angle** | Which vocabulary the brand reaches for when it runs a given angle. |
+| **Shared category language** | The phrases most brands in the niche use — the category's common tongue. |
+
+The measure is **document frequency, not occurrence count**: a phrase used once in eight of ten ads is the brand's vocabulary; a phrase hammered twenty times inside one long advertorial is one ad's quirk. Counting occurrences ranks the second above the first and gets the whole question backwards.
+
+Four rules keep the output readable rather than merely full: phrases never start or end on a function word (so "free shipping" survives and "shipping on" does not) and never end on a bare figure; they never cross a sentence boundary; a shorter term folds into a longer one containing it ("dosed" into "clinically dosed tongkat ali"); and two windows of the same phrase shifted by a word are reported once. The brand's own name and product names are excluded, or every brand's top term would be itself.
+
+Distinctiveness is **leave-one-out**: a brand's own usage is excluded from the category baseline it is measured against. Include it and a brand can never look distinctive against a number it is itself inflating.
+
+```
+Language they repeat            In ads   Share   Avg exposure
+  clinically dosed                   4  100.0%          73.6
+  male vitality                      4  100.0%          73.6
+  clinically dosed tongkat ali       2   50.0%          83.8
+  tired of low energy                2   50.0%          79.4
+
+Their words, not the category's: clinically dosed (20x) · third-party tested (10x)
+Hook vocabulary:     tired of low energy · male vitality
+Closing vocabulary:  shop now · trusted by 40000 men
+```
+
 **Across brands:**
 
 | Output | What it answers |
@@ -248,7 +276,7 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # validates the input schema, then 229 tests (loopback HTTP only)
+npm test          # validates the input schema, then 250 tests (loopback HTTP only)
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
@@ -297,12 +325,13 @@ src/
   classify/                weighted taxonomy + classifier
   ads/                     provider interface, Meta Graph + Apify providers,
                            record normalisation, exposure scoring, research loop
-  analyze/                 angle library, copy analyser, funnel + velocity signals
+  analyze/                 angle library, copy analyser, funnel + velocity signals,
+                           recurring-language mining
   llm/                     optional Anthropic enrichment
   report/                  dataset rows, niche benchmarks, deviations, competitor
                            similarity, Markdown + HTML renderers
   util/                    domain, text, HTTP and proxy-session helpers
-tests/                     229 tests including an end-to-end run over local HTTP
+tests/                     250 tests including an end-to-end run over local HTTP
 scripts/                   docs generator, and a one-command platform runner
 ```
 

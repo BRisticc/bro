@@ -2,6 +2,7 @@ import type { AwarenessStage, BrandReport, ClassifiedBrand, RunReport } from '..
 import type { BrandAdResearch } from '../ads/ad-research.js';
 import { ANGLE_BY_KEY } from '../analyze/angle-library.js';
 import { analyseCreativeSignals } from '../analyze/creative-signals.js';
+import { buildBrandVocabulary, distinctiveTerms } from '../analyze/vocabulary.js';
 import { computeBenchmarks, computeDeviations, creativeCompetitors } from './benchmarks.js';
 import { share, truncate } from '../util/text.js';
 
@@ -106,6 +107,10 @@ export function buildBrandReport(
         commonOffers: [...offerCounts.values()].sort((a, b) => b.count - a.count).slice(0, 10),
         ads,
         creative: analyseCreativeSignals(ads, brand.domain),
+        vocabulary: buildBrandVocabulary(ads, {
+            brandName: brand.brandName,
+            productNames: brand.products.map((p) => p.name),
+        }),
         // Filled in by buildRunReport, once every brand is known.
         deviations: [],
         creativeCompetitors: [],
@@ -208,6 +213,13 @@ export function buildRunReport(brands: BrandReport[], meta: RunReportMeta): RunR
     for (const brand of brands) {
         const benchmark = benchmarkByNiche.get(brand.niche);
         if (benchmark) brand.deviations = computeDeviations(brand, benchmark);
+        // Distinctive wording only means anything against a baseline, so it is
+        // computed here rather than per brand in isolation.
+        if (benchmark && brand.vocabulary) {
+            brand.vocabulary.distinctive = distinctiveTerms(
+                brand.vocabulary, benchmark.vocabulary, 8, brand.domain,
+            );
+        }
         brand.creativeCompetitors = creativeCompetitors(brand, brands);
     }
 

@@ -1,5 +1,6 @@
 import type { BrandReport } from '../types.js';
 import { ANGLE_LIBRARY } from '../analyze/angle-library.js';
+import { buildNicheVocabulary, type NicheVocabularyEntry } from '../analyze/vocabulary.js';
 import { share } from '../util/text.js';
 
 /**
@@ -42,6 +43,8 @@ export interface NicheBenchmark {
     commonTools: Array<{ tool: string; brandShare: number }>;
     /** Angles the niche barely touches — the creative gaps. */
     angleWhitespace: Array<{ angle: string; label: string; share: number; description: string }>;
+    /** The language the category shares: what everyone here says. */
+    vocabulary: NicheVocabularyEntry[];
 }
 
 /** Below this many ads in a niche, angle shares are noise, not a pattern. */
@@ -140,6 +143,11 @@ export function computeBenchmarks(brands: BrandReport[]): NicheBenchmark[] {
                 .sort((a, b) => b.brandShare - a.brandShare)
                 .slice(0, 12),
             angleWhitespace: whitespace,
+            vocabulary: buildNicheVocabulary(
+                list
+                    .filter((b) => b.vocabulary && b.vocabulary.signature.length > 0)
+                    .map((b) => ({ brand: b.domain, vocabulary: b.vocabulary! })),
+            ),
         };
 
         const assign = <K extends keyof NicheBenchmark>(key: K, value: NicheBenchmark[K] | undefined): void => {

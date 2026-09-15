@@ -1,11 +1,13 @@
 import type { TechStack } from './profile/tech-stack.js';
 import type { CommerceSignals } from './profile/commerce-signals.js';
 import type { CreativeSignals } from './analyze/creative-signals.js';
+import type { BrandVocabulary } from './analyze/vocabulary.js';
 import type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
 
 export type { TechStack } from './profile/tech-stack.js';
 export type { CommerceSignals } from './profile/commerce-signals.js';
 export type { CreativeSignals, FunnelType, ScalingPosture } from './analyze/creative-signals.js';
+export type { BrandVocabulary, TermStat, DistinctiveTerm, NicheVocabularyEntry } from './analyze/vocabulary.js';
 export type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
 
 /**
@@ -214,6 +216,8 @@ export interface BrandReport {
     commerce?: CommerceSignals;
     /** How the ad account is behaving: velocity, funnels, scaling posture. */
     creative?: CreativeSignals;
+    /** The language this brand repeats across its ads. */
+    vocabulary?: BrandVocabulary;
     /** Where this brand breaks from its niche. Filled in after benchmarking. */
     deviations: BrandDeviation[];
     /** Brands with the most similar creative fingerprint. */

@@ -69,6 +69,38 @@ function brandSection(brand: BrandReport): string {
             lines.push(`- **${d.signal}** (${d.direction}): ${d.brandValue} vs ${d.nicheValue} — ${mdEscape(d.note)}`);
         }
     }
+    const vocab = brand.vocabulary;
+    if (vocab && vocab.signature.length > 0) {
+        lines.push('');
+        lines.push('**Language they repeat** _(% = share of this brand\'s ads containing the term)_');
+        lines.push('');
+        lines.push('| Term | In ads | Share | Avg exposure |');
+        lines.push('| --- | ---: | ---: | ---: |');
+        for (const t of vocab.signature.slice(0, 15)) {
+            lines.push(`| \`${mdEscape(t.term)}\` | ${t.adCount} | ${pct(t.adShare)} | ${t.avgExposure} |`);
+        }
+        lines.push('');
+        if (vocab.distinctive.length > 0) {
+            lines.push(`**Their words, not the category's:** ${vocab.distinctive.map((t) => `\`${mdEscape(t.term)}\` (${t.lift}× category)`).join(' · ')}`);
+            lines.push('');
+        }
+        if (vocab.hookTerms.length > 0) {
+            lines.push(`**Hook vocabulary:** ${vocab.hookTerms.slice(0, 10).map((t) => `\`${mdEscape(t.term)}\``).join(' · ')}`);
+        }
+        if (vocab.ctaTerms.length > 0) {
+            lines.push(`**Closing vocabulary:** ${vocab.ctaTerms.slice(0, 10).map((t) => `\`${mdEscape(t.term)}\``).join(' · ')}`);
+        }
+        if (vocab.byAngle.length > 0) {
+            lines.push('');
+            lines.push('**Words they reach for per angle**');
+            lines.push('');
+            for (const group of vocab.byAngle.slice(0, 6)) {
+                lines.push(`- **${group.label}** (${group.adCount} ads): ${group.terms.map((t) => `\`${mdEscape(t)}\``).join(', ')}`);
+            }
+        }
+        lines.push('');
+    }
+
     if (brand.creativeCompetitors.length > 0) {
         lines.push('');
         lines.push(`**Competing for the same feed slot:** ${brand.creativeCompetitors.map((c) => `${c.brand} (${c.similarity}% similar)`).join(' · ')}`);
@@ -157,6 +189,17 @@ function benchmarkSection(b: NicheBenchmark): string {
         lines.push(`**Category stack:** ${b.commonTools.map((t) => `${t.tool} ${pct(t.brandShare)}`).join(' · ')}`);
     }
     lines.push('');
+
+    if (b.vocabulary.length > 0) {
+        lines.push('**Shared category language** _(brands using each term)_');
+        lines.push('');
+        lines.push('| Term | Brands | Share of brands | Avg share of their ads |');
+        lines.push('| --- | ---: | ---: | ---: |');
+        for (const v of b.vocabulary.slice(0, 20)) {
+            lines.push(`| \`${mdEscape(v.term)}\` | ${v.brandCount} | ${pct(v.brandShare)} | ${pct(v.avgAdShare)} |`);
+        }
+        lines.push('');
+    }
 
     if (b.angleWhitespace.length > 0) {
         lines.push('**Creative whitespace — angles nobody here is running**');
