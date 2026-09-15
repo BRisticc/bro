@@ -117,6 +117,43 @@ function brandCard(brand: BrandReport): string {
         }
     }
 
+    const inventory = brand.pageInventory;
+    if (inventory && inventory.totalUrls > 0) {
+        parts.push(`<p class="meta"><b>Publishes ${inventory.totalUrls} pages:</b> ${inventory.counts.map((c) => `<span class="chip">${escapeHtml(c.kind)} ${c.count}</span>`).join('')}</p>`);
+        for (const gap of inventory.unadvertised.slice(0, 4)) {
+            parts.push(`<p class="meta">${gap.count} ${escapeHtml(gap.kind)} page(s) with no ad spend behind them</p>`);
+        }
+        if (inventory.unlistedAdDestinations.length > 0) {
+            parts.push(`<p class="meta">Advertised but unindexed: ${inventory.unlistedAdDestinations.map((u) => `<span class="chip">${escapeHtml(u)}</span>`).join('')}</p>`);
+        }
+    }
+    const productPages = (brand.productPages ?? []).filter((p) => p.ok);
+    if (productPages.length > 0) {
+        parts.push('<div class="scroll"><table><thead><tr><th>Product</th><th class="num">Price</th><th class="num">Was</th><th class="num">Off</th><th>Subscription</th><th class="num">Reviews</th></tr></thead><tbody>');
+        for (const page of productPages) {
+            parts.push(`<tr><td>${escapeHtml(page.title ?? page.url)}</td><td class="num">${page.price ?? '—'}</td>`
+                + `<td class="num">${page.compareAtPrice ?? '—'}</td>`
+                + `<td class="num">${page.discountPercent !== undefined ? `${page.discountPercent}%` : '—'}</td>`
+                + `<td>${page.subscriptionOffered ? 'yes' : 'no'}</td>`
+                + `<td class="num">${page.reviewCount ?? '—'}</td></tr>`);
+        }
+        parts.push('</tbody></table></div>');
+    }
+    const checkout = brand.checkout;
+    if (checkout) {
+        const bits = [
+            `cart: ${checkout.cartStyle}`,
+            checkout.currency ?? '',
+            checkout.freeShippingThreshold !== undefined ? `free shipping over ${checkout.freeShippingThreshold}` : '',
+            checkout.returnWindowDays !== undefined ? `${checkout.returnWindowDays}-day returns` : '',
+        ].filter(Boolean);
+        parts.push(`<p class="meta"><b>Cart &amp; checkout:</b> ${bits.map((b) => `<span class="chip">${escapeHtml(b)}</span>`).join('')}</p>`);
+        if (checkout.checkoutStack.length > 0) {
+            parts.push(`<p class="meta">Stack: ${checkout.checkoutStack.map((a) => `<span class="chip">${escapeHtml(a)}</span>`).join('')}</p>`);
+        }
+        parts.push(`<p class="meta">${escapeHtml(checkout.checkoutNote)}</p>`);
+    }
+
     const vocab = brand.vocabulary;
     if (vocab && vocab.signature.length > 0) {
         parts.push('<p class="meta"><b>Language they repeat</b> (share of this brand\'s ads)</p>');

@@ -5,6 +5,8 @@ import type { BrandVocabulary } from './analyze/vocabulary.js';
 import type { LandingPageMap } from './analyze/landing-pages.js';
 import type { ProvenWinners } from './analyze/creative-signals.js';
 import type { LandingTeardown } from './profile/landing-teardown.js';
+import type { PageInventory } from './profile/page-inventory.js';
+import type { ProductPageIntel, CheckoutIntel } from './profile/commerce-pages.js';
 import type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
 
 export type { TechStack } from './profile/tech-stack.js';
@@ -14,6 +16,8 @@ export type { BrandVocabulary, TermStat, DistinctiveTerm, NicheVocabularyEntry }
 export type { LandingPageMap, LandingPageGroup } from './analyze/landing-pages.js';
 export type { ProvenWinners } from './analyze/creative-signals.js';
 export type { LandingTeardown, PageShape } from './profile/landing-teardown.js';
+export type { PageInventory, PageKind } from './profile/page-inventory.js';
+export type { ProductPageIntel, CheckoutIntel } from './profile/commerce-pages.js';
 export type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
 
 /**
@@ -230,6 +234,12 @@ export interface BrandReport {
     provenWinners?: ProvenWinners;
     /** Opt-in: the destination pages actually opened and read. */
     landingTeardowns?: LandingTeardown[];
+    /** Opt-in: every page the brand publishes, from its own sitemap. */
+    pageInventory?: PageInventory;
+    /** Opt-in: product pages read in detail. */
+    productPages?: ProductPageIntel[];
+    /** Opt-in: cart and checkout mechanics, read without creating state. */
+    checkout?: CheckoutIntel;
     /** Where this brand breaks from its niche. Filled in after benchmarking. */
     deviations: BrandDeviation[];
     /** Brands with the most similar creative fingerprint. */

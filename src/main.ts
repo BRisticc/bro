@@ -8,6 +8,8 @@ import { buildCorpus, classifyBrand } from './classify/classifier.js';
 import { BUILT_IN_TAXONOMY, mergeTaxonomy } from './classify/taxonomy.js';
 import { researchBrandAds } from './ads/ad-research.js';
 import { teardownLandingPages } from './profile/landing-teardown.js';
+import { buildPageInventory } from './profile/page-inventory.js';
+import { readCheckoutIntel, readProductPage } from './profile/commerce-pages.js';
 import { ApifyActorAdsProvider } from './ads/apify-actor-provider.js';
 import { MetaGraphAdsProvider } from './ads/meta-graph-provider.js';
 import { NoOpAdsProvider, type AdsProvider } from './ads/provider.js';
@@ -221,6 +223,51 @@ try {
         log.info(`  ${brand.brandName} → ${research.ads.length} ad(s) analysed`);
         return buildBrandReport(brand, research, provider.name, input.provenWinnerMinDays);
     });
+
+    const wantsDeepPages = input.discoverPageInventory || input.analyseProductPages || input.analyseCheckout;
+    if (wantsDeepPages) {
+        log.info('Stage 4c/5 — reading published pages (inventory, products, checkout)');
+        await mapWithConcurrency(reports, input.maxConcurrency, async (report, index) => {
+            const opts = await fetchOptions(`pages_${index}`);
+
+            if (input.discoverPageInventory) {
+                const adDestinations = (report.landingPages?.pages ?? []).map((p) => p.url);
+                report.pageInventory = await buildPageInventory(report.websiteUrl, {
+                    ...opts,
+                    maxSitemaps: 12,
+                    maxUrls: input.maxSitemapUrls,
+                    adDestinations,
+                });
+                log.info(`  ${report.brandName} → ${report.pageInventory.totalUrls} published page(s)`);
+            }
+
+            if (input.analyseProductPages) {
+                // Prefer product URLs the ads point at, then the sitemap, then
+                // whatever the profiler found: spend first, breadth second.
+                const advertised = (report.landingPages?.pages ?? [])
+                    .filter((p) => p.funnel === 'product-page')
+                    .map((p) => p.url);
+                const fromSitemap = report.pageInventory?.samples.product ?? [];
+                const fromProfile = report.products
+                    .map((p) => p.url)
+                    .filter((u): u is string => Boolean(u));
+                const targets = [...new Set([...advertised, ...fromSitemap, ...fromProfile])]
+                    .slice(0, input.maxProductPagesPerBrand);
+                if (targets.length > 0) {
+                    report.productPages = await mapWithConcurrency(
+                        targets,
+                        Math.min(3, input.maxConcurrency),
+                        async (url) => readProductPage(url, opts),
+                    );
+                    log.info(`  ${report.brandName} → ${report.productPages.filter((p) => p.ok).length} product page(s) read`);
+                }
+            }
+
+            if (input.analyseCheckout) {
+                report.checkout = await readCheckoutIntel(report.websiteUrl, opts);
+            }
+        });
+    }
 
     if (input.analyseLandingPages) {
         const targets = reports.filter((r) => (r.landingPages?.pages.length ?? 0) > 0);

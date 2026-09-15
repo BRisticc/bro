@@ -214,6 +214,40 @@
       "minimum": 1,
       "maximum": 25
     },
+    "discoverPageInventory": {
+      "title": "Discover every published page (sitemap)",
+      "description": "Reads robots.txt and the sitemaps it declares to inventory everything the brand publishes — products, collections, advertorials, landing pages — and reports what it publishes but puts NO ad spend behind, plus ad destinations missing from the sitemap (usually deliberately unindexed funnels).",
+      "type": "boolean",
+      "default": false
+    },
+    "maxSitemapUrls": {
+      "title": "Max sitemap URLs per brand",
+      "description": "Cap on URLs read from a brand’s sitemaps. Large catalogues are counted up to this and the report says the count is a floor.",
+      "type": "integer",
+      "default": 2000,
+      "minimum": 100,
+      "maximum": 20000
+    },
+    "analyseProductPages": {
+      "title": "Read product pages in detail",
+      "description": "Opens product pages for price and compare-at price (the real discount), variants, subscription offer and its discount, bundle tiers, guarantee, review counts, trust badges and the conversion apps installed. On Shopify it reads the storefront product JSON rather than parsing markup.",
+      "type": "boolean",
+      "default": false
+    },
+    "maxProductPagesPerBrand": {
+      "title": "Max product pages per brand",
+      "description": "Product pages the ads point at are read first, then the sitemap, then the rest — spend before breadth.",
+      "type": "integer",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 50
+    },
+    "analyseCheckout": {
+      "title": "Read cart and checkout mechanics",
+      "description": "Cart style (drawer or page), currency, free-shipping threshold, payment methods, BNPL providers, checkout and post-purchase apps, plus the real returns window and shipping terms from the policy pages. The checkout page ITSELF is not fetched: it exists only behind a cart, and reaching it would mean creating a cart on the brand’s store.",
+      "type": "boolean",
+      "default": false
+    },
     "rankBy": {
       "title": "Rank ads by",
       "type": "string",

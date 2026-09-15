@@ -31,6 +31,11 @@ export interface ActorInput {
     provenWinnerMinDays: number;
     analyseLandingPages: boolean;
     maxLandingPagesPerBrand: number;
+    discoverPageInventory: boolean;
+    analyseProductPages: boolean;
+    maxProductPagesPerBrand: number;
+    analyseCheckout: boolean;
+    maxSitemapUrls: number;
     rankBy: RankBy;
     useLlm: boolean;
     llmApiKey?: string;
@@ -93,6 +98,11 @@ export function parseInput(raw: Record<string, unknown> | null): ActorInput {
         provenWinnerMinDays: asInt(input.provenWinnerMinDays, 60, 1, 365),
         analyseLandingPages: input.analyseLandingPages === true,
         maxLandingPagesPerBrand: asInt(input.maxLandingPagesPerBrand, 5, 1, 25),
+        discoverPageInventory: input.discoverPageInventory === true,
+        analyseProductPages: input.analyseProductPages === true,
+        maxProductPagesPerBrand: asInt(input.maxProductPagesPerBrand, 5, 1, 50),
+        analyseCheckout: input.analyseCheckout === true,
+        maxSitemapUrls: asInt(input.maxSitemapUrls, 2000, 100, 20000),
         adActiveStatus: asEnum(input.adActiveStatus, ['ALL', 'ACTIVE', 'INACTIVE'] as const, 'ALL'),
         rankBy: asEnum(input.rankBy, ['composite', 'impressions', 'reach', 'longevity', 'spend'] as const, 'composite'),
         useLlm: input.useLlm === true,

@@ -1,6 +1,6 @@
 import type { BrandReport, NicheBenchmark, RunReport } from '../types.js';
 import { summariseCommerce } from '../profile/commerce-signals.js';
-import { truncate } from '../util/text.js';
+import { truncate, uniq as uniqStrings } from '../util/text.js';
 import { angleDescription } from './report-builder.js';
 
 function pct(value: number): string {
@@ -138,6 +138,74 @@ function brandSection(brand: BrandReport): string {
             }
             lines.push('');
         }
+    }
+
+    const inventory = brand.pageInventory;
+    if (inventory && inventory.totalUrls > 0) {
+        lines.push('');
+        lines.push(`**Everything they publish** — ${inventory.totalUrls} page(s) across ${inventory.sitemapsRead.length} sitemap(s)`);
+        lines.push('');
+        lines.push(`${inventory.counts.map((c) => `${c.kind} ${c.count}`).join(' · ')}`);
+        lines.push('');
+        if (inventory.unadvertised.length > 0) {
+            lines.push('**Published but unadvertised** _(exists, no ad spend behind it)_');
+            lines.push('');
+            for (const gap of inventory.unadvertised) {
+                lines.push(`- ${gap.count} ${gap.kind} page(s): ${gap.examples.slice(0, 3).map((u) => `\`${mdEscape(new URL(u).pathname)}\``).join(', ')}`);
+            }
+            lines.push('');
+        }
+        if (inventory.unlistedAdDestinations.length > 0) {
+            lines.push(`**Advertised but not in the sitemap** _(usually a deliberately unindexed funnel)_: ${inventory.unlistedAdDestinations.map((u) => `\`${mdEscape(new URL(u).pathname)}\``).join(', ')}`);
+            lines.push('');
+        }
+        for (const note of inventory.notes) lines.push(`_${mdEscape(note)}_`);
+        if (inventory.notes.length > 0) lines.push('');
+    }
+
+    const productPages = (brand.productPages ?? []).filter((p) => p.ok);
+    if (productPages.length > 0) {
+        lines.push('');
+        lines.push('**Product pages**');
+        lines.push('');
+        lines.push('| Product | Price | Was | Discount | Subscription | Guarantee | Reviews |');
+        lines.push('| --- | ---: | ---: | ---: | --- | ---: | ---: |');
+        for (const page of productPages) {
+            lines.push(`| ${mdEscape(page.title ?? new URL(page.url).pathname)} `
+                + `| ${page.price ?? '—'} | ${page.compareAtPrice ?? '—'} `
+                + `| ${page.discountPercent !== undefined ? `${page.discountPercent}%` : '—'} `
+                + `| ${page.subscriptionOffered ? (page.subscriptionDiscountPercent !== undefined ? `yes, ${page.subscriptionDiscountPercent}%` : 'yes') : 'no'} `
+                + `| ${page.guaranteeDays ?? '—'} | ${page.reviewCount ?? '—'} |`);
+        }
+        lines.push('');
+        const apps = uniqStrings(productPages.flatMap((p) => p.conversionApps));
+        if (apps.length > 0) lines.push(`**Conversion apps on their PDPs:** ${apps.join(' · ')}`);
+        const tiers = uniqStrings(productPages.flatMap((p) => p.bundleTiers));
+        if (tiers.length > 0) lines.push(`**Bundle offers:** ${tiers.slice(0, 8).map((t) => mdEscape(t)).join(' · ')}`);
+        const trust = uniqStrings(productPages.flatMap((p) => p.trustSignals));
+        if (trust.length > 0) lines.push(`**Trust signals in the buy box:** ${trust.join(' · ')}`);
+        lines.push('');
+    }
+
+    const checkout = brand.checkout;
+    if (checkout) {
+        lines.push('');
+        lines.push('**Cart & checkout**');
+        lines.push('');
+        const bits = [
+            `cart: ${checkout.cartStyle}`,
+            checkout.currency ? `currency ${checkout.currency}` : null,
+            checkout.freeShippingThreshold !== undefined ? `free shipping over ${checkout.freeShippingThreshold}` : null,
+            checkout.returnWindowDays !== undefined ? `${checkout.returnWindowDays}-day returns` : null,
+            checkout.restockingFee ? 'charges a restocking fee' : null,
+        ].filter(Boolean);
+        lines.push(`- ${bits.join(' · ')}`);
+        if (checkout.paymentMethods.length > 0) lines.push(`- payments: ${checkout.paymentMethods.join(' · ')}`);
+        if (checkout.bnpl.length > 0) lines.push(`- BNPL: ${checkout.bnpl.join(' · ')}`);
+        if (checkout.checkoutStack.length > 0) lines.push(`- stack: ${checkout.checkoutStack.join(' · ')}`);
+        if (checkout.shippingNote) lines.push(`- shipping: ${mdEscape(checkout.shippingNote)}`);
+        lines.push(`- _${mdEscape(checkout.checkoutNote)}_`);
+        lines.push('');
     }
 
     const vocab = brand.vocabulary;

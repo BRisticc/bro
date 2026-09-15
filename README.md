@@ -158,6 +158,22 @@ Looks like their own split tests
 
 **Filtering to what scales.** `minExposureScore` drops ads below a score before analysis, so a floor of 60 returns the top ads that clear 60 rather than whatever survives inside an arbitrary first N. Note what this is not: **Meta publishes true impressions for political and issue ads only**, so on a commercial run this filters on EU reach, days running and creative variants — a better proxy for what a brand is scaling than impressions would be, because it measures survival rather than delivery.
 
+**Everything they publish, not just what they advertise:**
+
+Ads tell you what a brand spends on — a subset. `robots.txt` and the sitemaps it declares tell you what *exists*, from the brand's own mouth, without guessing a URL. The gap between the two is the finding.
+
+| Output | What it answers |
+| --- | --- |
+| **Page inventory** *(opt-in)* | Every published page, counted by kind: products, collections, advertorials, landing pages, quizzes, policies. |
+| **Published but unadvertised** | Pages that exist with no ad spend behind them — twenty advertorials and money behind three means seventeen were built and abandoned, or are about to be tested. |
+| **Advertised but unlisted** | Ad destinations absent from the sitemap. Usually a deliberately unindexed funnel, and often the best one. |
+| **Product pages** *(opt-in)* | Price and compare-at price — so the *real* discount, not the one in the copy — plus variants, subscription offer and its discount, bundle tiers, guarantee, review counts, trust badges and the conversion apps installed. On Shopify it reads the storefront product JSON rather than parsing markup. |
+| **Cart & checkout** *(opt-in)* | Cart style, currency, free-shipping threshold, payment methods, BNPL, the checkout and post-purchase app stack, and the real returns window and restocking fee from the policy pages. |
+
+**Where this stops, and why.** The checkout page itself is not fetched. It exists only behind a cart, so reaching it would mean programmatically adding an item to a stranger's store — creating a session, an abandoned-cart record and an analytics event on someone else's business. That is not reading a public page, so the actor does not do it, and every checkout report says so rather than leaving a silent gap. Everything establishable without that side effect is gathered instead, and in practice the app stack, the policies and the cart mechanics answer most of what the checkout page would have told you.
+
+Product pages are read spend-first: the ones the ads point at, then the sitemap, then the rest.
+
 **Across brands:**
 
 | Output | What it answers |
@@ -302,7 +318,7 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # validates the input schema, then 272 tests (loopback HTTP only)
+npm test          # validates the input schema, then 298 tests (loopback HTTP only)
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
@@ -347,7 +363,8 @@ src/
   input.ts                 input parsing, validation, provider resolution
   discovery/               brand extraction and scoring from a source page
   profile/                 brand site fetching, JSON-LD / meta / Shopify extraction,
-                           marketing-stack and commerce-signal detection
+                           marketing-stack and commerce-signal detection,
+                           sitemap page inventory, product and checkout reads
   classify/                weighted taxonomy + classifier
   ads/                     provider interface, Meta Graph + Apify providers,
                            record normalisation, exposure scoring, research loop
@@ -357,7 +374,7 @@ src/
   report/                  dataset rows, niche benchmarks, deviations, competitor
                            similarity, Markdown + HTML renderers
   util/                    domain, text, HTTP and proxy-session helpers
-tests/                     272 tests including an end-to-end run over local HTTP
+tests/                     298 tests including an end-to-end run over local HTTP
 scripts/                   docs generator, and a one-command platform runner
 ```
 
