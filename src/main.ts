@@ -15,6 +15,7 @@ import { buildBrandReport, buildRunReport } from './report/report-builder.js';
 import { renderMarkdown } from './report/markdown.js';
 import { renderHtml } from './report/html.js';
 import { fetchPage, mapWithConcurrency, type FetchOptions } from './util/http.js';
+import { proxySessionId } from './util/proxy.js';
 import { truncate } from './util/text.js';
 
 await Actor.init();
@@ -30,12 +31,12 @@ try {
         ? await Actor.createProxyConfiguration(input.proxyConfiguration)
         : undefined;
 
-    const fetchOptions = async (sessionId: string): Promise<FetchOptions> => {
+    const fetchOptions = async (sessionLabel: string): Promise<FetchOptions> => {
         const opts: FetchOptions = {
             timeoutSecs: input.requestTimeoutSecs,
             retries: input.maxRequestRetries,
         };
-        const proxyUrl = await proxyConfiguration?.newUrl(sessionId);
+        const proxyUrl = await proxyConfiguration?.newUrl(proxySessionId(sessionLabel));
         if (proxyUrl) opts.proxyUrl = proxyUrl;
         return opts;
     };
@@ -181,7 +182,7 @@ try {
                 timeoutSecs: input.requestTimeoutSecs,
                 retries: input.maxRequestRetries,
             };
-            const proxyUrl = await proxyConfiguration?.newUrl('ads');
+            const proxyUrl = await proxyConfiguration?.newUrl(proxySessionId('ads'));
             provider = new MetaGraphAdsProvider(proxyUrl ? { ...graphOptions, proxyUrl } : graphOptions);
             break;
         }

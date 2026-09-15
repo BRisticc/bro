@@ -204,7 +204,7 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # validates the input schema, then 180 tests (loopback HTTP only)
+npm test          # validates the input schema, then 190 tests (loopback HTTP only)
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
@@ -255,8 +255,8 @@ src/
   analyze/                 angle library, copy analyser
   llm/                     optional Anthropic enrichment
   report/                  dataset rows, run rollup, Markdown + HTML renderers
-  util/                    domain, text, HTTP helpers
-tests/                     180 tests including an end-to-end run over local HTTP
+  util/                    domain, text, HTTP and proxy-session helpers
+tests/                     190 tests including an end-to-end run over local HTTP
 scripts/                   docs generator, and a one-command platform runner
 ```
 
