@@ -51,12 +51,55 @@ export function buildInput(args) {
     };
 }
 
+/**
+ * Turns a failed response into a message that says which side failed.
+ *
+ * A 403 can come from Apify (bad or revoked token) or from a proxy/firewall
+ * between you and Apify that never let the request out. Those need opposite
+ * fixes, and the raw status alone sends people to rotate a token that was
+ * fine all along.
+ */
+export function describeHttpFailure(method, path, status, body) {
+    const text = String(body ?? '').trim();
+    const head = `${method} ${path} -> HTTP ${status}`;
+
+    let apifyError = null;
+    try {
+        apifyError = JSON.parse(text)?.error ?? null;
+    } catch { /* not JSON: almost certainly not Apify talking */ }
+
+    if (apifyError && (apifyError.message || apifyError.type)) {
+        const detail = apifyError.message ?? apifyError.type;
+        const hint = status === 401 || /token/i.test(String(apifyError.type))
+            ? '\n  Apify rejected the credentials. Check APIFY_TOKEN is current and not revoked.'
+            : '';
+        return `${head}: Apify says "${detail}"${hint}`;
+    }
+
+    if (/allowlist|egress|not allowed|blocked|proxy|CONNECT|tunnel/i.test(text)) {
+        return `${head}: ${text.slice(0, 300)}`
+            + '\n  This came from a proxy or firewall, not from Apify — the request never reached the API.'
+            + '\n  Your token is not the problem. Allow api.apify.com in the network egress settings and retry.';
+    }
+
+    return `${head}: ${text.slice(0, 300) || '(empty response body)'}`;
+}
+
 async function api(path, token, options = {}) {
     const sep = path.includes('?') ? '&' : '?';
-    const response = await fetch(`${API}${path}${sep}token=${encodeURIComponent(token)}`, options);
+    const url = `${API}${path}${sep}token=${encodeURIComponent(token)}`;
+
+    let response;
+    try {
+        response = await fetch(url, options);
+    } catch (err) {
+        throw new Error(`${options.method ?? 'GET'} ${path} could not connect: ${err.message}`
+            + '\n  Nothing reached api.apify.com. Check network access to it before suspecting the token.');
+    }
+
     const text = await response.text();
     if (!response.ok) {
-        throw new Error(`${options.method ?? 'GET'} ${path} -> HTTP ${response.status}: ${text.slice(0, 400)}`);
+        throw new Error(describeHttpFailure(options.method ?? 'GET', path, response.status, text));
     }
     return text;
 }

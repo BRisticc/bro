@@ -145,7 +145,10 @@ describe('scripts/run-remote.mjs builds input this actor accepts', () => {
     // so a relative specifier would not find the script.
     const load = async () => await import(
         pathToFileURL(resolve('scripts/run-remote.mjs')).href
-    ) as { buildInput: (args: Record<string, unknown>) => Record<string, unknown> };
+    ) as {
+        buildInput: (args: Record<string, unknown>) => Record<string, unknown>;
+        describeHttpFailure: (method: string, path: string, status: number, body: string) => string;
+    };
 
     it('produces input that survives parseInput unchanged', async () => {
         const { buildInput } = await load();
@@ -174,5 +177,42 @@ describe('scripts/run-remote.mjs builds input this actor accepts', () => {
         await load();
         await load();
         assert.ok(true);
+    });
+});
+
+describe('run-remote tells you which side of the wire failed', () => {
+    const load = async () => await import(
+        pathToFileURL(resolve('scripts/run-remote.mjs')).href
+    ) as { describeHttpFailure: (m: string, p: string, s: number, b: string) => string };
+
+    it('names a proxy allowlist block as a network problem, not a bad token', async () => {
+        const { describeHttpFailure } = await load();
+        const message = describeHttpFailure('GET', '/acts', 403,
+            'Host not in allowlist: api.apify.com. Add this host to your network egress settings to allow access.');
+        assert.match(message, /proxy or firewall/);
+        assert.match(message, /token is not the problem/);
+        assert.doesNotMatch(message, /Check APIFY_TOKEN is current/);
+    });
+
+    it('names an Apify auth rejection as a token problem', async () => {
+        const { describeHttpFailure } = await load();
+        const message = describeHttpFailure('GET', '/acts', 401,
+            JSON.stringify({ error: { type: 'token-not-provided', message: 'Authentication token is not provided' } }));
+        assert.match(message, /Apify says "Authentication token is not provided"/);
+        assert.match(message, /Check APIFY_TOKEN is current/);
+        assert.doesNotMatch(message, /proxy or firewall/);
+    });
+
+    it('passes an Apify permissions error through without a token hint', async () => {
+        const { describeHttpFailure } = await load();
+        const message = describeHttpFailure('GET', '/acts', 403,
+            JSON.stringify({ error: { type: 'insufficient-permissions', message: 'Insufficient permissions' } }));
+        assert.match(message, /Apify says "Insufficient permissions"/);
+        assert.doesNotMatch(message, /Check APIFY_TOKEN is current/);
+    });
+
+    it('says so plainly when the body is empty', async () => {
+        const { describeHttpFailure } = await load();
+        assert.match(describeHttpFailure('GET', '/acts', 502, ''), /\(empty response body\)/);
     });
 });
