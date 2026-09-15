@@ -8,14 +8,22 @@
       "type": "array",
       "description": "The web page(s) to mine for brands. Can be a listicle ('25 best men's supplement brands'), a marketplace category, a retailer stockist page, an awards list, a directory, or a single brand's own site (set Discovery mode to 'single-brand').",
       "editor": "requestListSources",
-      "prefill": [{ "url": "https://example.com/best-mens-supplement-brands" }]
+      "prefill": [
+        {
+          "url": "https://example.com/best-mens-supplement-brands"
+        }
+      ]
     },
     "discoveryMode": {
       "title": "Discovery mode",
       "type": "string",
       "description": "How brands are extracted from the source page. 'auto' detects whether the page is a list of brands or a single brand site.",
       "editor": "select",
-      "enum": ["auto", "outbound-links", "single-brand"],
+      "enum": [
+        "auto",
+        "outbound-links",
+        "single-brand"
+      ],
       "enumTitles": [
         "Auto-detect",
         "Outbound links (listicles, directories, stockist pages)",
@@ -55,8 +63,16 @@
       "type": "string",
       "description": "'fast' = homepage only. 'standard' = homepage + about/product index + Shopify products.json. 'deep' = standard + up to 5 extra on-site pages.",
       "editor": "select",
-      "enum": ["fast", "standard", "deep"],
-      "enumTitles": ["Fast (homepage only)", "Standard (recommended)", "Deep (slowest, richest)"],
+      "enum": [
+        "fast",
+        "standard",
+        "deep"
+      ],
+      "enumTitles": [
+        "Fast (homepage only)",
+        "Standard (recommended)",
+        "Deep (slowest, richest)"
+      ],
       "default": "standard",
       "sectionCaption": "Profiling & classification"
     },
@@ -87,7 +103,12 @@
       "type": "string",
       "description": "Where ad data comes from. 'auto' picks the first one that is configured. See README for what each provider can and cannot return.",
       "editor": "select",
-      "enum": ["auto", "meta-graph", "apify-actor", "none"],
+      "enum": [
+        "auto",
+        "meta-graph",
+        "apify-actor",
+        "none"
+      ],
       "enumTitles": [
         "Auto (first configured)",
         "Meta Ad Library Graph API (needs access token)",
@@ -122,15 +143,25 @@
       "type": "array",
       "description": "ISO country codes to search the Ad Library in. EU codes are what unlock audience-reach figures.",
       "editor": "stringList",
-      "default": ["US"]
+      "default": [
+        "US"
+      ]
     },
     "adSearchStrategy": {
       "title": "Ad search strategy",
       "type": "string",
       "description": "What to search the Ad Library for.",
       "editor": "select",
-      "enum": ["brand", "brand+products", "products"],
-      "enumTitles": ["Brand name only", "Brand name + product names", "Product names only"],
+      "enum": [
+        "brand",
+        "brand+products",
+        "products"
+      ],
+      "enumTitles": [
+        "Brand name only",
+        "Brand name + product names",
+        "Product names only"
+      ],
       "default": "brand+products"
     },
     "adsPerBrand": {
@@ -143,9 +174,14 @@
     },
     "adActiveStatus": {
       "title": "Ad status",
+      "description": "Whether to return ads that are currently running, ones that have stopped, or both. Ads that stopped after a long run are often the most informative winners.",
       "type": "string",
       "editor": "select",
-      "enum": ["ALL", "ACTIVE", "INACTIVE"],
+      "enum": [
+        "ALL",
+        "ACTIVE",
+        "INACTIVE"
+      ],
       "default": "ALL"
     },
     "rankBy": {
@@ -153,7 +189,13 @@
       "type": "string",
       "description": "'composite' blends every exposure signal that is actually present (impressions, EU reach, days running, creative variants, spend). Read the README: Meta only publishes true impressions for political/issue ads.",
       "editor": "select",
-      "enum": ["composite", "impressions", "reach", "longevity", "spend"],
+      "enum": [
+        "composite",
+        "impressions",
+        "reach",
+        "longevity",
+        "spend"
+      ],
       "enumTitles": [
         "Composite exposure score (recommended)",
         "Impressions (political/issue ads only)",
@@ -172,12 +214,14 @@
     },
     "llmApiKey": {
       "title": "Anthropic API key",
+      "description": "Anthropic API key used for the optional enrichment pass. Falls back to the ANTHROPIC_API_KEY environment variable when empty.",
       "type": "string",
       "editor": "textfield",
       "isSecret": true
     },
     "llmModel": {
       "title": "Model",
+      "description": "Anthropic model ID used for enrichment, e.g. \"claude-sonnet-5\".",
       "type": "string",
       "editor": "textfield",
       "default": "claude-sonnet-5"
@@ -187,12 +231,29 @@
       "type": "array",
       "description": "Dataset is always written. The others are saved to the key-value store as REPORT.json / REPORT.md / REPORT.html.",
       "editor": "select",
-      "items": { "type": "string", "enum": ["json", "markdown", "html"], "enumTitles": ["JSON", "Markdown", "HTML"] },
-      "default": ["json", "markdown", "html"],
+      "items": {
+        "type": "string",
+        "enum": [
+          "json",
+          "markdown",
+          "html"
+        ],
+        "enumTitles": [
+          "JSON",
+          "Markdown",
+          "HTML"
+        ]
+      },
+      "default": [
+        "json",
+        "markdown",
+        "html"
+      ],
       "sectionCaption": "Output & runtime"
     },
     "maxConcurrency": {
       "title": "Max concurrency",
+      "description": "How many brand sites are fetched in parallel. The nested Ad Library actor is capped at 3 regardless, because each call is a full actor run.",
       "type": "integer",
       "default": 5,
       "minimum": 1,
@@ -200,6 +261,7 @@
     },
     "requestTimeoutSecs": {
       "title": "Request timeout (s)",
+      "description": "Per-request timeout when fetching source pages and brand sites.",
       "type": "integer",
       "default": 30,
       "minimum": 5,
@@ -207,6 +269,7 @@
     },
     "maxRequestRetries": {
       "title": "Max retries per request",
+      "description": "How many times a failed page fetch is retried, with exponential backoff.",
       "type": "integer",
       "default": 3,
       "minimum": 0,
@@ -217,8 +280,12 @@
       "type": "object",
       "description": "Strongly recommended. Brand sites and the Ad Library both rate-limit datacenter IPs.",
       "editor": "proxy",
-      "default": { "useApifyProxy": true }
+      "default": {
+        "useApifyProxy": true
+      }
     }
   },
-  "required": ["startUrls"]
+  "required": [
+    "startUrls"
+  ]
 }

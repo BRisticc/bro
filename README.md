@@ -204,10 +204,11 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # 162 tests; only loopback HTTP, no internet needed
+npm test          # validates the input schema, then 176 tests (loopback HTTP only)
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
+npm run validate  # Apify input/dataset schema check on its own
 ```
 
 For a local run, put your input in `storage/key_value_stores/default/INPUT.json`. To push to the platform, `apify push`.
@@ -242,7 +243,7 @@ src/
   llm/                     optional Anthropic enrichment
   report/                  dataset rows, run rollup, Markdown + HTML renderers
   util/                    domain, text, HTTP helpers
-tests/                     162 tests including an end-to-end run over local HTTP
+tests/                     176 tests including an end-to-end run over local HTTP
 scripts/                   generates docs/reference.md from the source
 ```
 
