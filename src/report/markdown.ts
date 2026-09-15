@@ -1,4 +1,5 @@
-import type { BrandReport, RunReport } from '../types.js';
+import type { BrandReport, NicheBenchmark, RunReport } from '../types.js';
+import { summariseCommerce } from '../profile/commerce-signals.js';
 import { truncate } from '../util/text.js';
 import { angleDescription } from './report-builder.js';
 
@@ -31,6 +32,46 @@ function brandSection(brand: BrandReport): string {
     lines.push(`- **Platform:** ${brand.platform}`);
     if (brand.products.length > 0) {
         lines.push(`- **Products sampled:** ${brand.products.slice(0, 8).map((p) => p.name).join(' · ')}`);
+    }
+    if (brand.techStack) {
+        const t = brand.techStack;
+        lines.push(`- **Stack (${t.sophisticationScore}/100):** ${t.all.join(', ') || 'nothing detected'}`);
+        const flags = [
+            t.paidMediaTracking ? `paid: ${t.paidChannels.join(', ')}` : 'no ad pixel',
+            t.lifecycleMarketing ? 'lifecycle email/SMS' : null,
+            t.subscriptionCommerce ? 'subscription' : null,
+            t.reviewProgramme ? 'review programme' : null,
+            t.bnpl ? 'BNPL' : null,
+        ].filter(Boolean);
+        lines.push(`- **Growth posture:** ${flags.join(' · ')}`);
+    }
+    if (brand.commerce) {
+        lines.push(`- **Commercials:** ${summariseCommerce(brand.commerce)}`);
+        if (brand.commerce.pressMentions.length > 0) lines.push(`- **Press:** ${brand.commerce.pressMentions.join(', ')}`);
+        if (brand.commerce.certifications.length > 0) lines.push(`- **Certifications:** ${brand.commerce.certifications.join(', ')}`);
+    }
+    if (brand.creative && brand.creative.adCount > 0) {
+        const c = brand.creative;
+        lines.push(`- **Ad account:** ${c.posture} — ${c.postureReason}`);
+        lines.push(`  - ${c.launchesPerMonth}/month · ${c.activeAds}/${c.adCount} active · median run ${c.medianRunDays ?? '?'}d · longest ${c.longestRunDays ?? '?'}d`);
+        if (c.funnelMix.length > 0) {
+            lines.push(`  - funnels: ${c.funnelMix.map((f) => `${f.funnel} ${pct(f.share)}`).join(' · ')}`);
+        }
+        if (c.mediaMix.length > 0) {
+            lines.push(`  - media: ${c.mediaMix.map((m) => `${m.mediaType} ${pct(m.share)}`).join(' · ')}`);
+        }
+    }
+    if (brand.deviations.length > 0) {
+        lines.push('');
+        lines.push('**How it breaks from its niche**');
+        lines.push('');
+        for (const d of brand.deviations) {
+            lines.push(`- **${d.signal}** (${d.direction}): ${d.brandValue} vs ${d.nicheValue} — ${mdEscape(d.note)}`);
+        }
+    }
+    if (brand.creativeCompetitors.length > 0) {
+        lines.push('');
+        lines.push(`**Competing for the same feed slot:** ${brand.creativeCompetitors.map((c) => `${c.brand} (${c.similarity}% similar)`).join(' · ')}`);
     }
     lines.push('');
 
@@ -79,6 +120,57 @@ function brandSection(brand: BrandReport): string {
     return lines.join('\n');
 }
 
+function benchmarkSection(b: NicheBenchmark): string {
+    const lines: string[] = [];
+    lines.push(`## Category benchmark — ${b.niche}`);
+    lines.push('');
+    lines.push(`${b.brandCount} brands · ${b.adCount} ads · median ${b.medianAdsPerBrand} ads per brand`);
+    lines.push('');
+    lines.push('| Norm | Value |');
+    lines.push('| --- | --- |');
+    const rows: Array<[string, string | undefined]> = [
+        ['Median price', b.medianPrice !== undefined ? String(b.medianPrice) : undefined],
+        ['Median guarantee', b.medianGuaranteeDays !== undefined ? `${b.medianGuaranteeDays} days` : undefined],
+        ['Median headline discount', b.medianDiscountPercent !== undefined ? `${b.medianDiscountPercent}%` : undefined],
+        ['Median review count', b.medianReviewCount !== undefined ? b.medianReviewCount.toLocaleString('en-US') : undefined],
+        ['Median stack maturity', b.medianSophistication !== undefined ? `${b.medianSophistication}/100` : undefined],
+        ['Median launches / month', b.medianLaunchesPerMonth !== undefined ? String(b.medianLaunchesPerMonth) : undefined],
+        ['Brands offering subscription', `${b.subscriptionShare}%`],
+        ['Brands tracking paid media', `${b.paidMediaShare}%`],
+        ['Brands running a review tool', `${b.reviewProgrammeShare}%`],
+        ['Brands offering BNPL', `${b.bnplShare}%`],
+    ];
+    for (const [label, value] of rows) {
+        if (value !== undefined) lines.push(`| ${label} | ${value} |`);
+    }
+    lines.push('');
+
+    const mixLine = (label: string, mix: Array<{ label: string; share: number }>): void => {
+        if (mix.length > 0) lines.push(`**${label}:** ${mix.slice(0, 6).map((m) => `${m.label} ${pct(m.share)}`).join(' · ')}`);
+    };
+    mixLine('Angles in play', b.angleMix);
+    mixLine('Formats', b.formatMix);
+    mixLine('Awareness stages', b.awarenessMix);
+    mixLine('Funnel destinations', b.funnelMix);
+    mixLine('Scaling postures', b.postureMix);
+    if (b.commonTools.length > 0) {
+        lines.push(`**Category stack:** ${b.commonTools.map((t) => `${t.tool} ${pct(t.brandShare)}`).join(' · ')}`);
+    }
+    lines.push('');
+
+    if (b.angleWhitespace.length > 0) {
+        lines.push('**Creative whitespace — angles nobody here is running**');
+        lines.push('');
+        lines.push('| Angle | Share of category ads | What it does |');
+        lines.push('| --- | ---: | --- |');
+        for (const w of b.angleWhitespace) {
+            lines.push(`| ${w.label} | ${pct(w.share)} | ${mdEscape(w.description)} |`);
+        }
+        lines.push('');
+    }
+    return lines.join('\n');
+}
+
 export function renderMarkdown(report: RunReport): string {
     const lines: string[] = [];
 
@@ -112,6 +204,10 @@ export function renderMarkdown(report: RunReport): string {
         if (niche.topAngles.length === 0) continue;
         lines.push(`**${niche.niche} — angles in play:** ${niche.topAngles.map((a) => `${a.label} ${pct(a.share)}`).join(' · ')}`);
         lines.push('');
+    }
+
+    for (const benchmark of report.benchmarks) {
+        lines.push(benchmarkSection(benchmark));
     }
 
     if (report.angleLeaderboard.length > 0) {

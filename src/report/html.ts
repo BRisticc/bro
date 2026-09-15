@@ -1,4 +1,5 @@
-import type { BrandReport, RunReport } from '../types.js';
+import type { BrandReport, NicheBenchmark, RunReport } from '../types.js';
+import { summariseCommerce } from '../profile/commerce-signals.js';
 import { escapeHtml, truncate } from '../util/text.js';
 import { angleDescription } from './report-builder.js';
 
@@ -56,6 +57,40 @@ function brandCard(brand: BrandReport): string {
     }
     if (brand.llmNote) parts.push(`<p class="meta">LLM: ${escapeHtml(brand.llmNote)}</p>`);
 
+    if (brand.techStack) {
+        const t = brand.techStack;
+        parts.push(`<p class="meta">Stack <b>${t.sophisticationScore}/100</b>: ${t.all.map((x) => `<span class="chip">${escapeHtml(x)}</span>`).join('') || '<span class="chip">nothing detected</span>'}</p>`);
+        const flags = [
+            t.paidMediaTracking ? `paid: ${t.paidChannels.join(', ')}` : 'no ad pixel',
+            t.lifecycleMarketing ? 'lifecycle' : null,
+            t.subscriptionCommerce ? 'subscription' : null,
+            t.reviewProgramme ? 'reviews' : null,
+            t.bnpl ? 'BNPL' : null,
+        ].filter((f): f is string => Boolean(f));
+        parts.push(`<p class="meta">${flags.map((f) => `<span class="chip">${escapeHtml(f)}</span>`).join('')}</p>`);
+    }
+    if (brand.commerce) {
+        parts.push(`<p class="meta">Commercials: ${escapeHtml(summariseCommerce(brand.commerce))}</p>`);
+    }
+    if (brand.creative && brand.creative.adCount > 0) {
+        const c = brand.creative;
+        parts.push(`<p class="meta">Ad account: <b>${escapeHtml(c.posture)}</b> — ${escapeHtml(c.postureReason)}</p>`);
+        parts.push(`<p class="meta">${c.launchesPerMonth}/month · ${c.activeAds}/${c.adCount} active · median run ${c.medianRunDays ?? '?'}d · longest ${c.longestRunDays ?? '?'}d</p>`);
+        if (c.funnelMix.length > 0) {
+            parts.push(`<p class="meta">Funnels: ${c.funnelMix.map((f) => `<span class="chip">${escapeHtml(f.funnel)} ${f.share}%</span>`).join('')}</p>`);
+        }
+    }
+    if (brand.deviations.length > 0) {
+        parts.push('<p class="meta"><b>Breaks from its niche</b></p><ul class="meta">');
+        for (const d of brand.deviations) {
+            parts.push(`<li><b>${escapeHtml(d.signal)}</b> (${escapeHtml(d.direction)}): ${escapeHtml(d.brandValue)} vs ${escapeHtml(d.nicheValue)} — ${escapeHtml(d.note)}</li>`);
+        }
+        parts.push('</ul>');
+    }
+    if (brand.creativeCompetitors.length > 0) {
+        parts.push(`<p class="meta">Same feed slot: ${brand.creativeCompetitors.map((c) => `<span class="chip">${escapeHtml(c.brand)} ${c.similarity}%</span>`).join('')}</p>`);
+    }
+
     if (brand.adCount === 0) {
         parts.push(`<p class="meta">No ads returned. Queries tried: ${brand.adQueries.map((q) => `<span class="chip">${escapeHtml(q)}</span>`).join('') || '—'}</p>`);
         for (const note of brand.notes.slice(0, 2)) parts.push(`<p class="meta">${escapeHtml(note)}</p>`);
@@ -84,6 +119,54 @@ function brandCard(brand: BrandReport): string {
         parts.push(`<p class="meta">${ad.analysis.angles.map((a) => `<span class="chip">${escapeHtml(a.label)}</span>`).join('') || '<span class="chip">no angle detected</span>'}</p>`);
         parts.push(`<p class="meta">${escapeHtml(ad.analysis.awarenessStage)} · ${escapeHtml(ad.analysis.format)} · ${escapeHtml(ad.analysis.hookType)} · ${ad.analysis.wordCount} words · ${escapeHtml(ad.exposure.basis)}</p>`);
         parts.push('</div>');
+    }
+
+    parts.push('</div>');
+    return parts.join('\n');
+}
+
+function benchmarkCard(b: NicheBenchmark): string {
+    const parts: string[] = [];
+    parts.push(`<h2>Category benchmark — ${escapeHtml(b.niche)}</h2><div class="card">`);
+    parts.push(`<p class="meta">${b.brandCount} brands · ${b.adCount} ads · median ${b.medianAdsPerBrand} ads per brand</p>`);
+
+    const norms: Array<[string, string | undefined]> = [
+        ['Median price', b.medianPrice !== undefined ? String(b.medianPrice) : undefined],
+        ['Guarantee', b.medianGuaranteeDays !== undefined ? `${b.medianGuaranteeDays}d` : undefined],
+        ['Headline discount', b.medianDiscountPercent !== undefined ? `${b.medianDiscountPercent}%` : undefined],
+        ['Reviews', b.medianReviewCount !== undefined ? b.medianReviewCount.toLocaleString('en-US') : undefined],
+        ['Stack maturity', b.medianSophistication !== undefined ? `${b.medianSophistication}/100` : undefined],
+        ['Launches/month', b.medianLaunchesPerMonth !== undefined ? String(b.medianLaunchesPerMonth) : undefined],
+        ['Subscription', `${b.subscriptionShare}%`],
+        ['Paid tracked', `${b.paidMediaShare}%`],
+        ['Review tool', `${b.reviewProgrammeShare}%`],
+    ];
+    parts.push('<div class="stats">');
+    for (const [label, value] of norms) {
+        if (value !== undefined) parts.push(`<div class="stat"><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span></div>`);
+    }
+    parts.push('</div>');
+
+    const mix = (label: string, entries: Array<{ label: string; share: number }>): void => {
+        if (entries.length === 0) return;
+        parts.push(`<p class="meta">${escapeHtml(label)}: ${entries.slice(0, 6).map((e) => `<span class="chip">${escapeHtml(e.label)} ${e.share}%</span>`).join('')}</p>`);
+    };
+    mix('Angles', b.angleMix);
+    mix('Formats', b.formatMix);
+    mix('Awareness', b.awarenessMix);
+    mix('Funnels', b.funnelMix);
+    mix('Postures', b.postureMix);
+    if (b.commonTools.length > 0) {
+        parts.push(`<p class="meta">Category stack: ${b.commonTools.map((t) => `<span class="chip">${escapeHtml(t.tool)} ${t.brandShare}%</span>`).join('')}</p>`);
+    }
+
+    if (b.angleWhitespace.length > 0) {
+        parts.push('<p class="meta"><b>Creative whitespace</b> — angles this category barely runs</p>');
+        parts.push('<div class="scroll"><table><thead><tr><th>Angle</th><th class="num">Share</th><th>What it does</th></tr></thead><tbody>');
+        for (const w of b.angleWhitespace) {
+            parts.push(`<tr><td>${escapeHtml(w.label)}</td><td class="num">${w.share}%</td><td class="meta">${escapeHtml(w.description)}</td></tr>`);
+        }
+        parts.push('</tbody></table></div>');
     }
 
     parts.push('</div>');
@@ -125,6 +208,8 @@ export function renderHtml(report: RunReport): string {
         parts.push(`<tr><td><b>${escapeHtml(niche.niche)}</b></td><td class="num">${niche.brandCount}</td><td>${subs}</td><td>${angles || '—'}</td></tr>`);
     }
     parts.push('</tbody></table></div>');
+
+    for (const benchmark of report.benchmarks) parts.push(benchmarkCard(benchmark));
 
     if (report.angleLeaderboard.length > 0) {
         parts.push('<h2>Angle leaderboard</h2><div class="scroll"><table><thead><tr><th>Angle</th><th class="num">Ads</th><th class="num">Brands</th><th class="num">Avg exposure</th><th>What it does</th></tr></thead><tbody>');

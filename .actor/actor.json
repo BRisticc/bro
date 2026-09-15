@@ -5,7 +5,9 @@
   "description": "Mine any web page for brands, classify each into niche / sub-niche / audience, then pull their Meta Ad Library ads (highest-exposure first) and reverse-engineer the marketing angles from the ad copy.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": { "templateId": "ts-crawlee-cheerio" },
+  "meta": {
+    "templateId": "ts-crawlee-cheerio"
+  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "storages": {
@@ -32,16 +34,36 @@
           "display": {
             "component": "table",
             "properties": {
-              "brandName": { "label": "Brand" },
-              "domain": { "label": "Domain" },
-              "niche": { "label": "Niche" },
-              "subNiche": { "label": "Sub-niche" },
-              "audience": { "label": "Audience" },
-              "classificationConfidence": { "label": "Confidence" },
-              "adCount": { "label": "Ads found" },
-              "topAngle": { "label": "Primary angle" },
-              "exposureScore": { "label": "Exposure score" },
-              "websiteUrl": { "label": "Website" }
+              "brandName": {
+                "label": "Brand"
+              },
+              "domain": {
+                "label": "Domain"
+              },
+              "niche": {
+                "label": "Niche"
+              },
+              "subNiche": {
+                "label": "Sub-niche"
+              },
+              "audience": {
+                "label": "Audience"
+              },
+              "classificationConfidence": {
+                "label": "Confidence"
+              },
+              "adCount": {
+                "label": "Ads found"
+              },
+              "topAngle": {
+                "label": "Primary angle"
+              },
+              "exposureScore": {
+                "label": "Exposure score"
+              },
+              "websiteUrl": {
+                "label": "Website"
+              }
             }
           }
         }

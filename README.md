@@ -84,6 +84,50 @@ Each surviving ad's copy (title + body + link description + CTA) is broken down 
 
 All of it is deterministic: the same copy always yields the same analysis, which is what makes the cross-brand aggregation meaningful.
 
+### 5b. Cross-intelligence — what is normal, and who breaks from it
+
+Classification tells you what a brand *is*. This layer tells you what it is *relative to everyone else in the run*, which is the part you act on. None of it costs another request — it is all re-read from what was already fetched.
+
+**Per brand, from its own page source:**
+
+| Signal | What you get | Why it matters |
+| --- | --- | --- |
+| **Marketing stack** | ~55 tools across ad pixels, analytics, email, SMS, subscription, reviews, CRO, support, BNPL and affiliate, plus a 0-100 maturity score | A Meta + TikTok pixel means the brand buys traffic. Recharge means subscription is real. Okendo means it invests in review collection. None of this is claimed in the copy. |
+| **Commerce shape** | price min/median/max, product count, subscription, free-shipping threshold, guarantee window, headline discount, review count and rating, press mentions, certifications, founding year | The numbers a competitor actually cares about, and directly comparable brand to brand. |
+
+**Per brand, from its ads:**
+
+| Signal | What you get |
+| --- | --- |
+| **Funnel destinations** | Where the clicks go — advertorial, listicle, quiz, PDP, collection, landing page, lead form, app store, off-site. Nobody publishes their funnel type; the destination URL gives it away. |
+| **Creative velocity** | Launches per month, launches in the last 30 days, days since the newest ad, median and longest run length, active count, total variants. |
+| **Scaling posture** | One word — `scaling`, `testing`, `steady`, `stale`, `absent` — with the reason. Often more actionable than the angle breakdown, because it says whether a brand is a live competitor or a coasting one. |
+| **Media & platform mix** | Video vs image vs carousel; Facebook vs Instagram vs Audience Network. |
+
+**Across brands:**
+
+| Output | What it answers |
+| --- | --- |
+| **Niche benchmark** | What is normal here: median price, guarantee, discount depth, review count, stack maturity, launches per month, and what share of the niche runs subscription / paid / reviews / BNPL. |
+| **Category stack** | Which tools the niche has standardised on, by percentage of brands. |
+| **Angle whitespace** | Angles the category barely runs — including the ones it runs *not at all*, which ranking what appeared would never surface. Suppressed below 10 ads, because with no data every angle reads as 0%. |
+| **Deviations** | Per brand, where it breaks from its niche and why that matters, in a sentence. Suppressed for niches under 3 brands, where a "median" is just the brand itself. |
+| **Creative competitors** | Which brands share this one's angle + format + awareness fingerprint. Two brands can sell different products and still fight over the same feed slot. |
+
+A real example from a three-brand supplement run:
+
+```
+### Titan Labs
+- Stack (0/100): nothing detected
+- Commercials: median 199.5 · 2 products · 210 reviews
+
+How it breaks from its niche
+- Price (above): 199.5 vs 49 — prices 307% above the Supplements median
+- Social proof volume (below): 210 vs 3100 — review count is below the category norm
+- Subscription (absent): the category monetises on repeat purchase and this brand does not
+- Paid media (absent): not set up to buy traffic while its competitors are
+```
+
 ### 6. Report
 
 - **Dataset** — one row per brand, with the full ad list and analysis nested.
@@ -204,7 +248,7 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # validates the input schema, then 190 tests (loopback HTTP only)
+npm test          # validates the input schema, then 229 tests (loopback HTTP only)
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
@@ -248,15 +292,17 @@ src/
   main.ts                  five-stage orchestrator
   input.ts                 input parsing, validation, provider resolution
   discovery/               brand extraction and scoring from a source page
-  profile/                 brand site fetching, JSON-LD / meta / Shopify extraction
+  profile/                 brand site fetching, JSON-LD / meta / Shopify extraction,
+                           marketing-stack and commerce-signal detection
   classify/                weighted taxonomy + classifier
   ads/                     provider interface, Meta Graph + Apify providers,
                            record normalisation, exposure scoring, research loop
-  analyze/                 angle library, copy analyser
+  analyze/                 angle library, copy analyser, funnel + velocity signals
   llm/                     optional Anthropic enrichment
-  report/                  dataset rows, run rollup, Markdown + HTML renderers
+  report/                  dataset rows, niche benchmarks, deviations, competitor
+                           similarity, Markdown + HTML renderers
   util/                    domain, text, HTTP and proxy-session helpers
-tests/                     190 tests including an end-to-end run over local HTTP
+tests/                     229 tests including an end-to-end run over local HTTP
 scripts/                   docs generator, and a one-command platform runner
 ```
 

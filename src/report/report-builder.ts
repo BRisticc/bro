@@ -1,6 +1,8 @@
 import type { AwarenessStage, BrandReport, ClassifiedBrand, RunReport } from '../types.js';
 import type { BrandAdResearch } from '../ads/ad-research.js';
 import { ANGLE_BY_KEY } from '../analyze/angle-library.js';
+import { analyseCreativeSignals } from '../analyze/creative-signals.js';
+import { computeBenchmarks, computeDeviations, creativeCompetitors } from './benchmarks.js';
 import { share, truncate } from '../util/text.js';
 
 function average(values: number[]): number {
@@ -103,10 +105,16 @@ export function buildBrandReport(
         }),
         commonOffers: [...offerCounts.values()].sort((a, b) => b.count - a.count).slice(0, 10),
         ads,
+        creative: analyseCreativeSignals(ads, brand.domain),
+        // Filled in by buildRunReport, once every brand is known.
+        deviations: [],
+        creativeCompetitors: [],
         notes,
         scrapedAt: new Date().toISOString(),
     };
 
+    if (brand.techStack) report.techStack = brand.techStack;
+    if (brand.commerce) report.commerce = brand.commerce;
     if (brand.classification.llmNote) report.llmNote = brand.classification.llmNote;
     if (brand.description) report.description = brand.description;
     if (brand.tagline) report.tagline = brand.tagline;
@@ -193,6 +201,16 @@ export function buildRunReport(brands: BrandReport[], meta: RunReportMeta): RunR
         .sort((a, b) => b.exposure - a.exposure)
         .slice(0, 25);
 
+    // Cross-brand pass: every brand is now measured against its own niche and
+    // against the other brands' creative fingerprints.
+    const benchmarks = computeBenchmarks(brands);
+    const benchmarkByNiche = new Map(benchmarks.map((b) => [b.niche, b]));
+    for (const brand of brands) {
+        const benchmark = benchmarkByNiche.get(brand.niche);
+        if (benchmark) brand.deviations = computeDeviations(brand, benchmark);
+        brand.creativeCompetitors = creativeCompetitors(brand, brands);
+    }
+
     return {
         generatedAt: new Date().toISOString(),
         sourceUrls: meta.sourceUrls,
@@ -212,6 +230,7 @@ export function buildRunReport(brands: BrandReport[], meta: RunReportMeta): RunR
             }))
             .sort((a, b) => b.adCount - a.adCount),
         topAdsOverall,
+        benchmarks,
         warnings: meta.warnings,
         brands,
     };

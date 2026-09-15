@@ -6,6 +6,8 @@ import {
     extractTextCorpus, internalPagesToFetch, load, organisationFromJsonLd, parseShopifyProducts,
     productsFromJsonLd,
 } from './extractors.js';
+import { detectTechStack } from './tech-stack.js';
+import { extractCommerceSignals } from './commerce-signals.js';
 
 export type ProfileDepth = 'fast' | 'standard' | 'deep';
 
@@ -138,6 +140,10 @@ export async function profileBrand(candidate: BrandCandidate, opts: ProfileOptio
     const range = priceRangeOf(profile.products);
     if (range) profile.priceRange = range;
     profile.corpus = truncate(collapseWhitespace(uniq(corpusParts).join(' \n ')), 60000);
+
+    // Both read the page we already have in memory — no extra requests.
+    profile.techStack = detectTechStack(homepageHtml);
+    profile.commerce = extractCommerceSignals(load(homepageHtml), profile.corpus, profile.products);
 
     return profile;
 }

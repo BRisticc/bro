@@ -1,3 +1,13 @@
+import type { TechStack } from './profile/tech-stack.js';
+import type { CommerceSignals } from './profile/commerce-signals.js';
+import type { CreativeSignals } from './analyze/creative-signals.js';
+import type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
+
+export type { TechStack } from './profile/tech-stack.js';
+export type { CommerceSignals } from './profile/commerce-signals.js';
+export type { CreativeSignals, FunnelType, ScalingPosture } from './analyze/creative-signals.js';
+export type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
+
 /**
  * Shared domain types for the whole pipeline.
  *
@@ -47,6 +57,10 @@ export interface BrandProfile extends BrandCandidate {
     corpus: string;
     pagesFetched: string[];
     priceRange?: { min: number; max: number; currency: string };
+    /** Marketing/commerce tools detected in the page source. */
+    techStack?: TechStack;
+    /** Prices, offers, guarantees and social proof read off the site. */
+    commerce?: CommerceSignals;
     fetchErrors: string[];
 }
 
@@ -194,6 +208,16 @@ export interface BrandReport {
     topHooks: Array<{ hook: string; exposure: number; snapshotUrl?: string }>;
     commonOffers: Array<{ kind: string; detail: string; count: number }>;
     ads: RankedAd[];
+    /** Marketing stack detected on the brand's own site. */
+    techStack?: TechStack;
+    /** Pricing, offer and social-proof shape. */
+    commerce?: CommerceSignals;
+    /** How the ad account is behaving: velocity, funnels, scaling posture. */
+    creative?: CreativeSignals;
+    /** Where this brand breaks from its niche. Filled in after benchmarking. */
+    deviations: BrandDeviation[];
+    /** Brands with the most similar creative fingerprint. */
+    creativeCompetitors: Array<{ brand: string; similarity: number; sharedAngles: string[] }>;
     notes: string[];
     scrapedAt: string;
 }
@@ -216,6 +240,8 @@ export interface RunReport {
     }>;
     angleLeaderboard: Array<{ angle: string; label: string; adCount: number; brandCount: number; avgExposure: number }>;
     topAdsOverall: Array<{ brand: string; hook: string; angle: string | null; exposure: number; snapshotUrl?: string }>;
+    /** Per-niche norms, mixes and creative whitespace. */
+    benchmarks: NicheBenchmark[];
     warnings: string[];
     brands: BrandReport[];
 }
