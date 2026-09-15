@@ -9,3 +9,4 @@ apify_storage/
 !.env.example
 .DS_Store
 *.log
+out/

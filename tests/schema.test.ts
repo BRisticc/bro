@@ -1,6 +1,8 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { parseInput } from '../src/input.js';
 
 interface SchemaProperty {
@@ -135,5 +137,42 @@ describe('schema and parser agree', () => {
             assert.equal(low[field], prop.minimum, `${field} should clamp up to its documented minimum`);
             assert.equal(high[field], prop.maximum, `${field} should clamp down to its documented maximum`);
         }
+    });
+});
+
+describe('scripts/run-remote.mjs builds input this actor accepts', () => {
+    // Imported by absolute path: the compiled test lives under dist-tests/,
+    // so a relative specifier would not find the script.
+    const load = async () => await import(
+        pathToFileURL(resolve('scripts/run-remote.mjs')).href
+    ) as { buildInput: (args: Record<string, unknown>) => Record<string, unknown> };
+
+    it('produces input that survives parseInput unchanged', async () => {
+        const { buildInput } = await load();
+        const parsed = parseInput(buildInput({ url: 'https://ultimapeak.com', mode: 'single-brand', strategy: 'brand' }));
+        assert.equal(parsed.discoveryMode, 'single-brand');
+        assert.equal(parsed.adSearchStrategy, 'brand');
+        assert.equal(parsed.profileDepth, 'deep');
+        assert.deepEqual(parsed.adCountries, ['US']);
+    });
+
+    it('splits and upper-cases a comma-separated country list', async () => {
+        const { buildInput } = await load();
+        const parsed = parseInput(buildInput({ url: 'https://a.com', countries: 'us, gb ,de' }));
+        assert.deepEqual(parsed.adCountries, ['US', 'GB', 'DE']);
+    });
+
+    it('rejects a missing or non-http url before any network call', async () => {
+        const { buildInput } = await load();
+        assert.throws(() => buildInput({}), /--url is required/);
+        assert.throws(() => buildInput({ url: 'ultimapeak.com' }), /must be an http\(s\) URL/);
+    });
+
+    it('does not run main() on import', async () => {
+        // Importing twice must stay silent; a side-effecting module would
+        // have tried to reach the API the first time.
+        await load();
+        await load();
+        assert.ok(true);
     });
 });
