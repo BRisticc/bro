@@ -7,6 +7,7 @@ import { profileBrand } from './profile/brand-profiler.js';
 import { buildCorpus, classifyBrand } from './classify/classifier.js';
 import { BUILT_IN_TAXONOMY, mergeTaxonomy } from './classify/taxonomy.js';
 import { researchBrandAds } from './ads/ad-research.js';
+import { teardownLandingPages } from './profile/landing-teardown.js';
 import { ApifyActorAdsProvider } from './ads/apify-actor-provider.js';
 import { MetaGraphAdsProvider } from './ads/meta-graph-provider.js';
 import { NoOpAdsProvider, type AdsProvider } from './ads/provider.js';
@@ -215,10 +216,27 @@ try {
             adsPerBrand: input.adsPerBrand,
             rankBy: input.rankBy,
             maxProductQueries,
+            minExposureScore: input.minExposureScore,
         });
         log.info(`  ${brand.brandName} → ${research.ads.length} ad(s) analysed`);
-        return buildBrandReport(brand, research, provider.name);
+        return buildBrandReport(brand, research, provider.name, input.provenWinnerMinDays);
     });
+
+    if (input.analyseLandingPages) {
+        const targets = reports.filter((r) => (r.landingPages?.pages.length ?? 0) > 0);
+        log.info(`Stage 4b/5 — opening landing pages for ${targets.length} brand(s)`);
+        await mapWithConcurrency(targets, input.maxConcurrency, async (report, index) => {
+            const opts = await fetchOptions(`landing-${index}`);
+            const teardowns = await teardownLandingPages(report.landingPages?.pages ?? [], {
+                ...opts,
+                concurrency: Math.min(3, input.maxConcurrency),
+                maxPages: input.maxLandingPagesPerBrand,
+            });
+            report.landingTeardowns = teardowns;
+            const reached = teardowns.filter((t) => t.ok).length;
+            log.info(`  ${report.brandName} → ${reached}/${teardowns.length} landing page(s) read`);
+        });
+    }
 
     if (input.useLlm && input.llmApiKey) {
         const llmOptions = { apiKey: input.llmApiKey, model: input.llmModel, timeoutSecs: input.requestTimeoutSecs };

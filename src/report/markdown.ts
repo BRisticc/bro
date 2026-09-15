@@ -69,6 +69,77 @@ function brandSection(brand: BrandReport): string {
             lines.push(`- **${d.signal}** (${d.direction}): ${d.brandValue} vs ${d.nicheValue} — ${mdEscape(d.note)}`);
         }
     }
+    const winners = brand.provenWinners;
+    if (winners && winners.adCount > 0) {
+        lines.push('');
+        lines.push(`**What they are scaling** — ${mdEscape(winners.pattern)}`);
+        lines.push('');
+        lines.push(`- ${winners.adCount} ad(s) ${winners.criteria} · median exposure ${winners.medianExposure}`);
+        lines.push(`- angles: ${winners.sharedAngles.map((a) => `${a.label} (${a.adCount})`).join(' · ') || 'none detected'}`);
+        lines.push(`- formats: ${winners.sharedFormats.join(' · ')} · funnels: ${winners.sharedFunnels.join(' · ')}`);
+    } else if (winners) {
+        lines.push('');
+        lines.push(`**What they are scaling:** ${mdEscape(winners.pattern)}`);
+    }
+
+    const landing = brand.landingPages;
+    if (landing && landing.pages.length > 0) {
+        const teardowns = new Map((brand.landingTeardowns ?? []).map((t) => [t.url, t]));
+        lines.push('');
+        lines.push(`**Pages they run** — ${landing.pages.length} destination(s), top page takes ${pct(landing.topPageShare)} of ads`);
+        lines.push('');
+        lines.push('| Page | Funnel | Ads | Exposure behind it | Angles driving it |');
+        lines.push('| --- | --- | ---: | ---: | --- |');
+        for (const page of landing.pages.slice(0, 10)) {
+            lines.push(`| \`${mdEscape(page.path)}\` | ${page.funnel} | ${page.adCount} | ${page.totalExposure} | ${mdEscape(page.angles.map((a) => a.label).join(', ')) || '—'} |`);
+        }
+        lines.push('');
+
+        if (landing.splitTests.length > 0) {
+            lines.push('**Looks like their own split tests**');
+            lines.push('');
+            for (const test of landing.splitTests) {
+                lines.push(`- \`${mdEscape(test.directory)}\` — ${test.pages.length} variants (${test.adCount} ads): ${test.pages.map((p) => `\`${mdEscape(p)}\``).join(', ')}`);
+            }
+            lines.push('');
+        }
+        if (landing.unknownDestinationAds > 0) {
+            lines.push(`_${landing.unknownDestinationAds} ad(s) had no destination URL in the provider's data._`);
+            lines.push('');
+        }
+
+        for (const page of landing.pages.slice(0, 10)) {
+            const teardown = teardowns.get(page.url);
+            if (!teardown) continue;
+            lines.push(`**Page teardown — \`${mdEscape(page.path)}\`**`);
+            lines.push('');
+            if (!teardown.ok) {
+                lines.push(`- could not be read: ${mdEscape(teardown.error ?? 'unknown error')}`);
+                lines.push('');
+                continue;
+            }
+            lines.push(`- ${teardown.shape} · ${teardown.wordCount} words · ${teardown.ctaCount} CTAs${teardown.hasForm ? ' · has a form' : ''}`);
+            if (teardown.h1) lines.push(`- H1: _${mdEscape(teardown.h1)}_`);
+            const commercials = [
+                teardown.price !== undefined ? `price ${teardown.price}${teardown.currency ?? ''}` : null,
+                teardown.guaranteeDays !== undefined ? `${teardown.guaranteeDays}-day guarantee` : null,
+                teardown.maxDiscountPercent !== undefined ? `${teardown.maxDiscountPercent}% off` : null,
+                teardown.reviewCount !== undefined ? `${teardown.reviewCount} reviews` : null,
+            ].filter(Boolean);
+            if (commercials.length > 0) lines.push(`- on-page: ${commercials.join(' · ')}`);
+            if (teardown.pageAngles.length > 0) {
+                lines.push(`- page angles: ${teardown.pageAngles.map((a) => a.label).join(', ')}`);
+            }
+            if (teardown.messageMatch !== undefined) {
+                lines.push(`- **message match ${teardown.messageMatch}%** — ${mdEscape(teardown.messageMatchNote ?? '')}`);
+            }
+            if (teardown.headings.length > 0) {
+                lines.push(`- structure: ${teardown.headings.slice(0, 8).map((h) => mdEscape(h)).join(' → ')}`);
+            }
+            lines.push('');
+        }
+    }
+
     const vocab = brand.vocabulary;
     if (vocab && vocab.signature.length > 0) {
         lines.push('');

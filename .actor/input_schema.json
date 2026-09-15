@@ -184,6 +184,36 @@
       ],
       "default": "ALL"
     },
+    "minExposureScore": {
+      "title": "Minimum exposure score",
+      "description": "Keep only ads scoring at or above this (0-100) before analysis. Set ~60 to look only at what a brand is genuinely scaling. Note: Meta publishes true impressions for political/issue ads only, so this score is built from EU reach, days running and creative variants — read the README before treating it as an impression filter.",
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 100
+    },
+    "provenWinnerMinDays": {
+      "title": "Proven-winner threshold (days)",
+      "description": "An ad running at least this long counts as a scaled winner. Advertisers switch off what does not work, so survival is the strongest evidence available when no impression figure exists.",
+      "type": "integer",
+      "default": 60,
+      "minimum": 1,
+      "maximum": 365
+    },
+    "analyseLandingPages": {
+      "title": "Open and analyse landing pages",
+      "description": "Off by default because it costs extra requests. When on, the actor opens the pages the ads point at and reports their shape, headings, price, guarantee, CTA count and — most usefully — whether the page continues the angle its ads promise.",
+      "type": "boolean",
+      "default": false
+    },
+    "maxLandingPagesPerBrand": {
+      "title": "Max landing pages per brand",
+      "description": "How many destinations to open per brand, taken in order of exposure invested behind them.",
+      "type": "integer",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 25
+    },
     "rankBy": {
       "title": "Rank ads by",
       "type": "string",

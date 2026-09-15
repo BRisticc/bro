@@ -132,6 +132,32 @@ Hook vocabulary:     tired of low energy · male vitality
 Closing vocabulary:  shop now · trusted by 40000 men
 ```
 
+**What they are scaling, and where the clicks go:**
+
+| Output | What it answers |
+| --- | --- |
+| **Proven winners** | The ads past a survival threshold (60 days by default), what angle they share, and what funnel they feed. An advertiser switches off what does not work, so an ad still delivering after months has been paid for repeatedly — that survival is the strongest evidence available when Meta publishes no impressions. |
+| **Pages they run** | Every distinct destination under the brand's own domain, ranked by the exposure invested behind it, with the funnel type and the angles driving traffic to each. A brand running twelve ads at four pages is running four funnels, not one. |
+| **Split tests** | Sibling pages under one directory, and the same path with different query parameters — the brand's own A/B tests, visible here and nowhere else. |
+| **Message match** *(opt-in)* | With `analyseLandingPages`, the actor opens each destination and reports its shape, headings, on-page price, guarantee, CTA count — and scores how much the page's own angles overlap the angles of the ads pointing at it. A low score behind heavy spend is a conversion leak. |
+
+Tracking parameters are stripped when grouping, so one page reached by twelve ads is one row and not twelve; parameters that genuinely change the page (`?variant=b`) are kept.
+
+```
+What they are scaling — 3 ads past 60 days; every one runs Unique mechanism,
+                        all pointing at an advertorial
+
+Pages they run — 3 destinations, top page takes 50.0% of ads
+  /blogs/news/why-men-lose-energy        advertorial    2 ads   exposure 167.5
+  /blogs/news/the-real-reason-you-tired  advertorial    1 ad    exposure  68.3
+  /products/daily-test                   product-page   1 ad    exposure  58.5
+
+Looks like their own split tests
+  /blogs/news — 2 variants (3 ads)
+```
+
+**Filtering to what scales.** `minExposureScore` drops ads below a score before analysis, so a floor of 60 returns the top ads that clear 60 rather than whatever survives inside an arbitrary first N. Note what this is not: **Meta publishes true impressions for political and issue ads only**, so on a commercial run this filters on EU reach, days running and creative variants — a better proxy for what a brand is scaling than impressions would be, because it measures survival rather than delivery.
+
 **Across brands:**
 
 | Output | What it answers |
@@ -276,7 +302,7 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # validates the input schema, then 250 tests (loopback HTTP only)
+npm test          # validates the input schema, then 272 tests (loopback HTTP only)
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
@@ -331,7 +357,7 @@ src/
   report/                  dataset rows, niche benchmarks, deviations, competitor
                            similarity, Markdown + HTML renderers
   util/                    domain, text, HTTP and proxy-session helpers
-tests/                     250 tests including an end-to-end run over local HTTP
+tests/                     272 tests including an end-to-end run over local HTTP
 scripts/                   docs generator, and a one-command platform runner
 ```
 

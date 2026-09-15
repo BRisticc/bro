@@ -27,6 +27,10 @@ export interface ActorInput {
     adSearchStrategy: AdSearchStrategy;
     adsPerBrand: number;
     adActiveStatus: 'ALL' | 'ACTIVE' | 'INACTIVE';
+    minExposureScore: number;
+    provenWinnerMinDays: number;
+    analyseLandingPages: boolean;
+    maxLandingPagesPerBrand: number;
     rankBy: RankBy;
     useLlm: boolean;
     llmApiKey?: string;
@@ -85,6 +89,10 @@ export function parseInput(raw: Record<string, unknown> | null): ActorInput {
         adCountries: asArray<string>(input.adCountries, ['US']).map((c) => String(c).trim().toUpperCase()).filter(Boolean),
         adSearchStrategy: asEnum(input.adSearchStrategy, ['brand', 'brand+products', 'products'] as const, 'brand+products'),
         adsPerBrand: asInt(input.adsPerBrand, 20, 1, 200),
+        minExposureScore: asInt(input.minExposureScore, 0, 0, 100),
+        provenWinnerMinDays: asInt(input.provenWinnerMinDays, 60, 1, 365),
+        analyseLandingPages: input.analyseLandingPages === true,
+        maxLandingPagesPerBrand: asInt(input.maxLandingPagesPerBrand, 5, 1, 25),
         adActiveStatus: asEnum(input.adActiveStatus, ['ALL', 'ACTIVE', 'INACTIVE'] as const, 'ALL'),
         rankBy: asEnum(input.rankBy, ['composite', 'impressions', 'reach', 'longevity', 'spend'] as const, 'composite'),
         useLlm: input.useLlm === true,

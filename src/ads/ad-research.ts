@@ -15,6 +15,8 @@ export interface AdResearchOptions {
     adsPerBrand: number;
     rankBy: RankBy;
     maxProductQueries: number;
+    /** Drop ads scoring below this before analysis. 0 keeps everything. */
+    minExposureScore?: number;
 }
 
 /** Product names that are really categories make terrible Ad Library queries. */
@@ -96,8 +98,20 @@ export async function researchBrandAds(
         }
     }
 
-    const ranked = rankAds(dedupeAds(collected), opts.rankBy).slice(0, opts.adsPerBrand);
+    const floor = opts.minExposureScore ?? 0;
+    const allRanked = rankAds(dedupeAds(collected), opts.rankBy);
+    // Filter before the cap, so a floor of 60 returns the top N ads that clear
+    // 60 rather than whatever survives inside an arbitrary first N.
+    const kept = floor > 0 ? allRanked.filter((ad) => ad.exposure.score >= floor) : allRanked;
+    const ranked = kept.slice(0, opts.adsPerBrand);
     const ads: RankedAd[] = ranked.map((ad) => ({ ...ad, analysis: analyseCopy(ad) }));
+
+    if (floor > 0 && allRanked.length > 0 && kept.length === 0) {
+        errors.push(
+            `all ${allRanked.length} ads scored below the minExposureScore of ${floor}; `
+            + 'lower it or widen adCountries — exposure scores are only comparable within a run',
+        );
+    }
 
     return { queries, ads, errors };
 }

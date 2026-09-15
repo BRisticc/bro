@@ -2,12 +2,18 @@ import type { TechStack } from './profile/tech-stack.js';
 import type { CommerceSignals } from './profile/commerce-signals.js';
 import type { CreativeSignals } from './analyze/creative-signals.js';
 import type { BrandVocabulary } from './analyze/vocabulary.js';
+import type { LandingPageMap } from './analyze/landing-pages.js';
+import type { ProvenWinners } from './analyze/creative-signals.js';
+import type { LandingTeardown } from './profile/landing-teardown.js';
 import type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
 
 export type { TechStack } from './profile/tech-stack.js';
 export type { CommerceSignals } from './profile/commerce-signals.js';
 export type { CreativeSignals, FunnelType, ScalingPosture } from './analyze/creative-signals.js';
 export type { BrandVocabulary, TermStat, DistinctiveTerm, NicheVocabularyEntry } from './analyze/vocabulary.js';
+export type { LandingPageMap, LandingPageGroup } from './analyze/landing-pages.js';
+export type { ProvenWinners } from './analyze/creative-signals.js';
+export type { LandingTeardown, PageShape } from './profile/landing-teardown.js';
 export type { BrandDeviation, NicheBenchmark } from './report/benchmarks.js';
 
 /**
@@ -218,6 +224,12 @@ export interface BrandReport {
     creative?: CreativeSignals;
     /** The language this brand repeats across its ads. */
     vocabulary?: BrandVocabulary;
+    /** Every distinct page its ads point at, ranked by exposure behind it. */
+    landingPages?: LandingPageMap;
+    /** The ads that have survived long enough to count as scaled. */
+    provenWinners?: ProvenWinners;
+    /** Opt-in: the destination pages actually opened and read. */
+    landingTeardowns?: LandingTeardown[];
     /** Where this brand breaks from its niche. Filled in after benchmarking. */
     deviations: BrandDeviation[];
     /** Brands with the most similar creative fingerprint. */

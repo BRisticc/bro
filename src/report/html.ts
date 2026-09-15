@@ -87,6 +87,36 @@ function brandCard(brand: BrandReport): string {
         }
         parts.push('</ul>');
     }
+    const winners = brand.provenWinners;
+    if (winners) {
+        parts.push(`<p class="meta"><b>Scaling:</b> ${escapeHtml(winners.pattern)}</p>`);
+    }
+    const landing = brand.landingPages;
+    if (landing && landing.pages.length > 0) {
+        const teardowns = new Map((brand.landingTeardowns ?? []).map((t) => [t.url, t]));
+        parts.push(`<p class="meta"><b>Pages they run</b> — ${landing.pages.length} destinations, top page takes ${landing.topPageShare}% of ads</p>`);
+        parts.push('<div class="scroll"><table><thead><tr><th>Page</th><th>Funnel</th><th class="num">Ads</th><th class="num">Exposure</th><th>Angles</th><th>Match</th></tr></thead><tbody>');
+        for (const page of landing.pages.slice(0, 10)) {
+            const teardown = teardowns.get(page.url);
+            const match = teardown?.messageMatch !== undefined
+                ? `<span class="chip">${teardown.messageMatch}%</span>`
+                : '—';
+            parts.push(`<tr><td><a href="${escapeHtml(page.url)}" rel="nofollow noopener">${escapeHtml(page.path)}</a></td>`
+                + `<td>${escapeHtml(page.funnel)}</td><td class="num">${page.adCount}</td>`
+                + `<td class="num">${page.totalExposure}</td>`
+                + `<td class="meta">${escapeHtml(page.angles.map((a) => a.label).join(', ')) || '—'}</td><td>${match}</td></tr>`);
+        }
+        parts.push('</tbody></table></div>');
+        for (const test of landing.splitTests) {
+            parts.push(`<p class="meta">Split test under <code>${escapeHtml(test.directory)}</code>: ${test.pages.map((p) => `<span class="chip">${escapeHtml(p)}</span>`).join('')}</p>`);
+        }
+        for (const teardown of brand.landingTeardowns ?? []) {
+            if (!teardown.ok) continue;
+            parts.push(`<p class="meta"><b>${escapeHtml(teardown.h1 ?? teardown.url)}</b> — ${escapeHtml(teardown.shape)} · ${teardown.wordCount} words · ${teardown.ctaCount} CTAs`
+                + `${teardown.messageMatchNote ? ` — ${escapeHtml(teardown.messageMatchNote)}` : ''}</p>`);
+        }
+    }
+
     const vocab = brand.vocabulary;
     if (vocab && vocab.signature.length > 0) {
         parts.push('<p class="meta"><b>Language they repeat</b> (share of this brand\'s ads)</p>');

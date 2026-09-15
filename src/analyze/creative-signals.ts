@@ -196,3 +196,93 @@ export function analyseCreativeSignals(
 
     return signals;
 }
+
+/** "an advertorial", "a product-page" — the report is a deliverable. */
+function article(word: string): string {
+    return /^[aeiou]/i.test(word) ? 'an' : 'a';
+}
+
+export interface ProvenWinners {
+    /** Ad ids that cleared the bar, highest exposure first. */
+    adIds: string[];
+    adCount: number;
+    /** The rule applied, stated so the number is never mistaken for a fact. */
+    criteria: string;
+    medianExposure: number;
+    /** Angles every winner shares, not merely the most common one. */
+    sharedAngles: Array<{ angle: string; label: string; adCount: number }>;
+    sharedFormats: string[];
+    sharedFunnels: FunnelType[];
+    /** One line: what these winners have in common. */
+    pattern: string;
+}
+
+/**
+ * The ads a brand is actually scaling.
+ *
+ * An advertiser switches off what does not work, so an ad still delivering
+ * after months has been paid for repeatedly — that survival is the strongest
+ * evidence available when Meta publishes no impressions. Exposure alone is
+ * not enough: a brand-new ad with wide reach may be a test that dies next
+ * week, so the bar is longevity first and reach second.
+ */
+export function findProvenWinners(
+    ads: RankedAd[],
+    minRunDays = 60,
+    brandDomain?: string,
+): ProvenWinners {
+    const winners = ads
+        .filter((ad) => (ad.daysRunning ?? 0) >= minRunDays)
+        .sort((a, b) => b.exposure.score - a.exposure.score);
+
+    const empty: ProvenWinners = {
+        adIds: [], adCount: 0,
+        criteria: `ran at least ${minRunDays} days`,
+        medianExposure: 0, sharedAngles: [], sharedFormats: [], sharedFunnels: [],
+        pattern: ads.length === 0
+            ? "no ads to judge"
+            : `no ad has run ${minRunDays} days yet — everything here is still a test`,
+    };
+    if (winners.length === 0) return empty;
+
+    const exposures = winners.map((w) => w.exposure.score).sort((a, b) => a - b);
+    const mid = Math.floor(exposures.length / 2);
+    const medianExposure = exposures.length % 2 === 0
+        ? Math.round((((exposures[mid - 1] ?? 0) + (exposures[mid] ?? 0)) / 2) * 10) / 10
+        : exposures[mid] ?? 0;
+
+    const angleCounts = new Map<string, { label: string; adCount: number }>();
+    for (const winner of winners) {
+        for (const hit of winner.analysis.angles) {
+            const entry = angleCounts.get(hit.angle) ?? { label: hit.label, adCount: 0 };
+            entry.adCount += 1;
+            angleCounts.set(hit.angle, entry);
+        }
+    }
+    const sharedAngles = [...angleCounts.entries()]
+        .map(([angle, e]) => ({ angle, label: e.label, adCount: e.adCount }))
+        .sort((a, b) => b.adCount - a.adCount)
+        .slice(0, 5);
+
+    const sharedFormats = [...new Set(winners.map((w) => w.analysis.format))];
+    const sharedFunnels = [...new Set(winners.map((w) => classifyFunnel(w.landingUrl, brandDomain)))];
+
+    const dominant = sharedAngles[0];
+    const everyWinner = dominant && dominant.adCount === winners.length;
+    const pattern = dominant
+        ? `${winners.length} ad${winners.length === 1 ? "" : "s"} past ${minRunDays} days; `
+            + `${everyWinner ? "every one" : `${dominant.adCount} of ${winners.length}`} runs ${dominant.label}`
+            + `${sharedFunnels.length === 1 ? `, all pointing at ${article(sharedFunnels[0] ?? "")} ${sharedFunnels[0]}` : ""}`
+        : `${winners.length} long-running ad${winners.length === 1 ? "" : "s"} with no shared angle`;
+
+    return {
+        adIds: winners.map((w) => w.id),
+        adCount: winners.length,
+        criteria: `ran at least ${minRunDays} days`,
+        medianExposure,
+        sharedAngles,
+        sharedFormats,
+        sharedFunnels,
+        pattern,
+    };
+}

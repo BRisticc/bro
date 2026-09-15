@@ -1,7 +1,8 @@
 import type { AwarenessStage, BrandReport, ClassifiedBrand, RunReport } from '../types.js';
 import type { BrandAdResearch } from '../ads/ad-research.js';
 import { ANGLE_BY_KEY } from '../analyze/angle-library.js';
-import { analyseCreativeSignals } from '../analyze/creative-signals.js';
+import { analyseCreativeSignals, findProvenWinners } from '../analyze/creative-signals.js';
+import { mapLandingPages } from '../analyze/landing-pages.js';
 import { buildBrandVocabulary, distinctiveTerms } from '../analyze/vocabulary.js';
 import { computeBenchmarks, computeDeviations, creativeCompetitors } from './benchmarks.js';
 import { share, truncate } from '../util/text.js';
@@ -16,6 +17,7 @@ export function buildBrandReport(
     brand: ClassifiedBrand,
     research: BrandAdResearch,
     adsProvider: string,
+    provenWinnerMinDays = 60,
 ): BrandReport {
     const { ads } = research;
     const total = ads.length;
@@ -107,6 +109,8 @@ export function buildBrandReport(
         commonOffers: [...offerCounts.values()].sort((a, b) => b.count - a.count).slice(0, 10),
         ads,
         creative: analyseCreativeSignals(ads, brand.domain),
+        landingPages: mapLandingPages(ads, brand.domain),
+        provenWinners: findProvenWinners(ads, provenWinnerMinDays, brand.domain),
         vocabulary: buildBrandVocabulary(ads, {
             brandName: brand.brandName,
             productNames: brand.products.map((p) => p.name),
