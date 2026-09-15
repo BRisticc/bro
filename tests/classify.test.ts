@@ -55,6 +55,46 @@ describe('classifier', () => {
         assert.equal(result.subNiche, 'Sports & performance');
     });
 
+    it('classifies a recruitment agency, not just DTC brands', () => {
+        const result = classifyText(
+            'We are a specialist recruitment and staffing agency. Executive search and permanent placement '
+            + 'for engineering teams. Our recruiters build a talent pool and shortlist candidates, cutting your '
+            + 'time to hire. Partner with us to scale your team.',
+            opts,
+        );
+        assert.equal(result.niche, 'Professional & B2B services');
+        assert.equal(result.subNiche, 'Recruitment & staffing');
+        assert.equal(result.unclassified, false);
+        assert.ok(result.confidence > 60, `confidence was ${result.confidence}`);
+    });
+
+    it('separates a marketing agency from a recruitment agency', () => {
+        const result = classifyText(
+            'A performance marketing agency. We handle media buying and paid social for DTC brands, '
+            + 'reporting on ROAS and ad spend every week on a monthly retainer.',
+            opts,
+        );
+        assert.equal(result.niche, 'Professional & B2B services');
+        assert.equal(result.subNiche, 'Marketing & creative agency');
+    });
+
+    it('keeps a SaaS product out of the B2B services branch', () => {
+        const result = classifyText(
+            'Our SaaS platform gives your team a dashboard, an API and workflow automation. '
+            + 'Integrations included. Per month per user, cancel anytime.',
+            opts,
+        );
+        assert.equal(result.subNiche, 'Software & SaaS');
+    });
+
+    it('does not pull a supplement brand into B2B services', () => {
+        const result = classifyText(
+            'Our creatine and whey protein are trusted by our clients. Case study: one athlete gained muscle.',
+            opts,
+        );
+        assert.equal(result.niche, 'Supplements');
+    });
+
     it('records auditable evidence for its call', () => {
         const result = classifyText('Our probiotic supports gut health and the microbiome. 50 billion CFU.', opts);
         const terms = result.evidence.map((e) => e.term);
@@ -104,6 +144,13 @@ describe('audience detection', () => {
 
     it('falls back to the sub-niche hint when copy is implicit', () => {
         assert.equal(detectAudience(normalise('Supports healthy levels naturally.'), ['men']), 'men');
+    });
+
+    it('reads a B2B hiring audience', () => {
+        assert.equal(
+            detectAudience(normalise('Talk to a hiring manager about your next hire. Scale your team fast.')),
+            'hiring managers',
+        );
     });
 
     it('returns null when nothing targets a group', () => {

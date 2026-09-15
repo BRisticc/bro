@@ -328,6 +328,47 @@ export const BUILT_IN_TAXONOMY: Taxonomy = {
             terms: [['insurance', 4], ['premium quote', 4], ['coverage', 2.5], ['deductible', 4], ['policyholder', 4]],
         },
     },
+    'Professional & B2B services': {
+        'Recruitment & staffing': {
+            terms: [['recruitment', 4], ['staffing', 4], ['headhunt', 4], ['headhunting', 4],
+                ['talent acquisition', 4], ['executive search', 4], ['job placement', 4], ['permanent placement', 4],
+                ['contract staffing', 4], ['candidate', 3], ['candidates', 3], ['shortlist', 3.5],
+                ['applicant tracking', 4], ['vacancy', 3.5], ['vacancies', 3.5], ['job board', 3.5],
+                ['hiring process', 3], ['we recruit', 4], ['recruiter', 4], ['talent pool', 4],
+                ['outstaffing', 4], ['rpo', 4], ['cv screening', 4], ['time to hire', 4]],
+            audience: ['businesses', 'hiring managers'],
+        },
+        'Marketing & creative agency': {
+            terms: [['media buying', 4], ['performance marketing', 4], ['paid social', 4], ['ppc', 4],
+                ['seo agency', 4], ['creative agency', 4], ['brand agency', 4], ['marketing agency', 4],
+                ['roas', 4], ['ad spend', 3.5], ['retainer', 3], ['campaign management', 3],
+                ['growth marketing', 3.5], ['funnel', 2.5], ['our clients', 2]],
+            audience: ['businesses'],
+        },
+        'Consulting & advisory': {
+            terms: [['consulting', 3.5], ['consultancy', 4], ['advisory', 3.5], ['management consulting', 4],
+                ['strategy consulting', 4], ['due diligence', 4], ['business transformation', 4],
+                ['operating model', 4], ['engagement model', 3.5], ['case study', 1.5]],
+            audience: ['businesses'],
+        },
+        'Software & IT services': {
+            terms: [['software development', 4], ['custom software', 4], ['dedicated team', 4],
+                ['nearshore', 4], ['offshore development', 4], ['outsourcing', 3.5], ['staff augmentation', 4],
+                ['it services', 4], ['devops', 3.5], ['system integration', 4], ['managed services', 4]],
+            audience: ['businesses'],
+        },
+        'Training & education': {
+            terms: [['bootcamp', 4], ['certification', 3], ['curriculum', 3.5], ['cohort', 4],
+                ['enrol', 3], ['enroll', 3], ['upskilling', 4], ['reskilling', 4], ['syllabus', 4],
+                ['online course', 3.5], ['masterclass', 3.5]],
+        },
+        'Legal, finance & compliance services': {
+            terms: [['law firm', 4], ['solicitor', 4], ['attorney', 4], ['legal advice', 4],
+                ['bookkeeping', 4], ['accountancy', 4], ['accounting firm', 4], ['payroll', 4],
+                ['tax advisory', 4], ['compliance audit', 4], ['gdpr', 3]],
+            audience: ['businesses'],
+        },
+    },
     'Outdoor & travel': {
         'Outdoor gear': {
             terms: [['camping', 4], ['hiking', 4], ['backpack', 3], ['tent', 4], ['waterproof jacket', 4],
@@ -352,7 +393,12 @@ export const AUDIENCE_TERMS: Record<string, WeightedTerm[]> = {
     parents: [['parents', 3.5], ['new mom', 4], ['new parents', 4], ['toddler', 3], ['baby', 2]],
     'pet owners': [['pet parent', 4], ['dog owner', 4], ['cat owner', 4], ['fur baby', 4]],
     professionals: [['busy professional', 4], ['executive', 3], ['founder', 2.5], ['entrepreneur', 3]],
-    businesses: [['b2b', 4], ['for teams', 3.5], ['enterprise', 3], ['your business', 3]],
+    businesses: [['b2b', 4], ['for teams', 3.5], ['enterprise', 3], ['your business', 3],
+        ['your company', 3], ['our clients', 2.5], ['partner with us', 3]],
+    'hiring managers': [['hiring manager', 4], ['talent acquisition', 3.5], ['your next hire', 4],
+        ['scale your team', 4], ['grow your team', 3.5], ['hr team', 3.5]],
+    'job seekers': [['your next role', 4], ['job seekers', 4], ['apply now', 2.5], ['open roles', 4],
+        ['career opportunities', 3.5], ['send us your cv', 4], ['browse jobs', 4]],
     vegans: [['vegan', 3], ['plant-based', 3], ['dairy-free', 2.5]],
 };
 

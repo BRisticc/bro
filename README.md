@@ -39,7 +39,7 @@ A brand whose site is down still gets a row, with the failure recorded in `notes
 
 ### 3. Classify — which niche and sub-niche?
 
-Everything collected becomes one corpus, scored against a weighted taxonomy of **17 niches and 67 sub-niches**: `Supplements → Men's health`, `Supplements → Sports & performance`, `Skincare → Anti-aging`, `Skincare → Acne & blemish`, `Haircare → Hair growth & loss`, `Sexual wellness → Male sexual health`, and so on. Audience (`men`, `women`, `athletes`, `parents`, `seniors / 50+`, `pet owners`…) is scored separately, so "Skincare / Anti-aging, for men" is expressible.
+Everything collected becomes one corpus, scored against a weighted taxonomy of **18 niches and 73 sub-niches**: `Supplements → Men's health`, `Supplements → Sports & performance`, `Skincare → Anti-aging`, `Skincare → Acne & blemish`, `Haircare → Hair growth & loss`, `Sexual wellness → Male sexual health`, and so on. It is not DTC-only: `Professional & B2B services` covers recruitment & staffing, agencies, consulting, IT services, training and professional firms, so a services site classifies rather than falling through to `Unclassified`. Audience (`men`, `women`, `athletes`, `parents`, `seniors / 50+`, `pet owners`…) is scored separately, so "Skincare / Anti-aging, for men" is expressible.
 
 Three properties make the call trustworthy rather than magic:
 
@@ -204,7 +204,7 @@ Plus `REPORT.json`, `REPORT.md` and `REPORT.html` in the key-value store.
 
 ```bash
 npm install
-npm test          # 157 tests; only loopback HTTP, no internet needed
+npm test          # 162 tests; only loopback HTTP, no internet needed
 npm run build
 npm start
 npm run docs      # regenerate docs/reference.md from the source
@@ -242,7 +242,7 @@ src/
   llm/                     optional Anthropic enrichment
   report/                  dataset rows, run rollup, Markdown + HTML renderers
   util/                    domain, text, HTTP helpers
-tests/                     157 tests including an end-to-end run over local HTTP
+tests/                     162 tests including an end-to-end run over local HTTP
 scripts/                   generates docs/reference.md from the source
 ```
 

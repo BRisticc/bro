@@ -2,7 +2,7 @@
 
 _Generated from the source by `npm run docs`. Do not edit by hand._
 
-## Niche taxonomy — 17 niches, 67 sub-niches
+## Niche taxonomy — 18 niches, 73 sub-niches
 
 Terms are weighted by how diagnostic they are. Override or extend any of this with the `customTaxonomy` input.
 
@@ -151,6 +151,17 @@ Terms are weighted by how diagnostic they are. Override or extend any of this wi
 | Fintech | `credit score`, `savings account`, `apy`, `investing app`, `cashback`, `debit card` | — |
 | Insurance | `insurance`, `premium quote`, `deductible`, `policyholder`, `coverage` | — |
 
+### Professional & B2B services
+
+| Sub-niche | Strongest terms | Implied audience |
+| --- | --- | --- |
+| Recruitment & staffing | `recruitment`, `staffing`, `headhunt`, `headhunting`, `talent acquisition`, `executive search` | businesses, hiring managers |
+| Marketing & creative agency | `media buying`, `performance marketing`, `paid social`, `ppc`, `seo agency`, `creative agency` | businesses |
+| Consulting & advisory | `consultancy`, `management consulting`, `strategy consulting`, `due diligence`, `business transformation`, `operating model` | businesses |
+| Software & IT services | `software development`, `custom software`, `dedicated team`, `nearshore`, `offshore development`, `staff augmentation` | businesses |
+| Training & education | `bootcamp`, `cohort`, `upskilling`, `reskilling`, `syllabus`, `curriculum` | — |
+| Legal, finance & compliance services | `law firm`, `solicitor`, `attorney`, `legal advice`, `bookkeeping`, `accountancy` | businesses |
+
 ### Outdoor & travel
 
 | Sub-niche | Strongest terms | Implied audience |
@@ -158,7 +169,7 @@ Terms are weighted by how diagnostic they are. Override or extend any of this wi
 | Outdoor gear | `camping`, `hiking`, `tent`, `waterproof jacket`, `backpack`, `trail` | — |
 | Travel | `luggage`, `carry-on`, `packing cube`, `travel pillow`, `tsa` | — |
 
-## Audience signals — 11 audiences
+## Audience signals — 13 audiences
 
 | Audience | Terms |
 | --- | --- |
@@ -171,7 +182,9 @@ Terms are weighted by how diagnostic they are. Override or extend any of this wi
 | parents | `parents`, `new mom`, `new parents`, `toddler`, `baby` |
 | pet owners | `pet parent`, `dog owner`, `cat owner`, `fur baby` |
 | professionals | `busy professional`, `executive`, `founder`, `entrepreneur` |
-| businesses | `b2b`, `for teams`, `enterprise`, `your business` |
+| businesses | `b2b`, `for teams`, `enterprise`, `your business`, `your company`, `our clients`, `partner with us` |
+| hiring managers | `hiring manager`, `talent acquisition`, `your next hire`, `scale your team`, `grow your team`, `hr team` |
+| job seekers | `your next role`, `job seekers`, `apply now`, `open roles`, `career opportunities`, `send us your cv`, `browse jobs` |
 | vegans | `vegan`, `plant-based`, `dairy-free` |
 
 ## Angle library — 20 angles
